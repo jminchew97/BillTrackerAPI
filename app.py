@@ -1,10 +1,9 @@
 from flask import Flask, request
 from flask_smorest import Api
-from db import bills
+import db
 import uuid
 
-from datetime import datetime,date
-from dateutil.relativedelta import relativedelta
+from datetime import date
 
 
 app = Flask(__name__)
@@ -23,47 +22,53 @@ def create_bill():
     
     """
     json_data = request.get_json()
-
+    bill_name = json_data['name']
+    bill_amount = json_data['amount']
+    due_date = json_data['due_date']
     
     # create due date object
     current_date = date.today()
-    due_date = json_data['due_date']
 
     # check if due date has passed or not
-    if current_date.day < int(due_date): # Due this month
+    try:
+        if current_date.day < int(due_date): # Due this month
 
-        due_date = date(current_date.year, current_date.month, int(due_date))
-        date_difference = due_date - current_date
+            # create due date object with due date being this month
+            due_date = date(current_date.year, current_date.month, int(due_date))
+            date_difference = due_date - current_date
 
-    elif current_date.day > int(due_date): # Due next month (add month to date object)
-        
-        # add month to current month
-        if current_date.month == 12: # if current month is 12, set to january
-            due_date = date(current_date.year, 1, int(due_date))
-        else: # month is less than 12
-            due_date = date(current_date.year, current_date.month+1, int(due_date))
-        
-        # get difference in days before next bill is due
-        date_difference = due_date-current_date
-        # dateutil was not working for some reason when i wanted to subtract days
-    
-    # create new UUID
-    id = uuid.uuid4().hex
-    new_bill = {**json_data, "bill_id":id, "due_date":due_date, "days_left":date_difference.days }
-    
+        elif current_date.day > int(due_date): # Due next month (add month to date object)
+            
+            # add month to current month
+            if current_date.month == 12: # if current month is 12, set to january
+                due_date = date(current_date.year, 1, int(due_date))
+            else: # month is less than 12
+                due_date = date(current_date.year, current_date.month+1, int(due_date))
+            
+            # get difference in days before next bill is due
+            date_difference = due_date-current_date
+    except ValueError:
+        return {"message":"Date you enters for month was not valid."}, 404
+ 
     # add bill to DB
-    bills[id] = new_bill
-    print(bills)
-    return new_bill
+    db.create_bill_record(bill_name, bill_amount, due_date)
+    
+    return {"message":"Everything went well"}, 200
+
 
 @app.get("/bill")
 def get_all_bills():
-    
-    return list(bills.values())
+    all_items = db.show_all()
+    return all_items, 200
 
 @app.get("/bill/<string:id>")
 def get_bill(id):
-    if id not in bills:
-        return {"message":"ID not valid, no bill with entered ID."}, 404
-    else:
-        return bills[id]
+    return db.select_record_by_id(id), 200
+
+@app.delete("/bill/<string:id>")
+def delete_bill_by_id(id):
+    db.delete_record_by_id(id)
+    return {"message":"Record has been deleted"}, 200
+
+
+print("Hello")
