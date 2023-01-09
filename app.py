@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_smorest import Api
-import db
+import database
+import sqlite3
 import uuid
 
 from datetime import date
@@ -51,23 +52,23 @@ def create_bill():
         return {"message":"Date you enters for month was not valid."}, 404
  
     # add bill to DB
-    db.create_bill_record(bill_name, bill_amount, due_date)
+    database.create_bill_record(bill_name, bill_amount, due_date)
     
     return {"message":"Everything went well"}, 200
 
 
 @app.get("/bill")
 def get_all_bills():
-    all_items = db.show_all()
+    all_items = database.show_all()
     return all_items, 200
 
 @app.get("/bill/<string:id>")
 def get_bill(id):
-    return db.select_record_by_id(id), 200
+    return database.select_record_by_id(id), 200
 
 @app.delete("/bill/<string:id>")
 def delete_bill_by_id(id):
-    db.delete_record_by_id(id)
+    database.delete_record_by_id(id)
     return {"message":"Record has been deleted"}, 200
 
 
