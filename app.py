@@ -50,6 +50,7 @@ def create_bill():
     # create new UUID
     id = uuid.uuid4().hex
     new_bill = {**json_data, "bill_id":id, "due_date":due_date, "days_left":date_difference.days }
+    
     # add bill to DB
     bills[id] = new_bill
     print(bills)
@@ -58,4 +59,11 @@ def create_bill():
 @app.get("/bill")
 def get_all_bills():
     
-    return bills.values()
+    return list(bills.values())
+
+@app.get("/bill/<string:id>")
+def get_bill(id):
+    if id not in bills:
+        return {"message":"ID not valid, no bill with entered ID."}, 404
+    else:
+        return bills[id]
