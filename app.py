@@ -3,7 +3,8 @@ import database
 import sqlite3
 import uuid
 import decimal  # use this instead
-from serializer import Serialize
+from Deserializer import deserialize_row, deserialize_rows, Bill
+from orjson import dumps, loads
 
 from datetime import date
 
@@ -43,7 +44,7 @@ def create_bill():
             due_date_obj: date = date(current_date.year, current_date.month, int(due_date))
             date_difference = due_date_obj - current_date
 
-        elif current_date.day > int(due_date):  # Due next month (add month to date object)
+        elif current_date.day  > int(due_date):  # Due next month (add month to date object)
 
             # add month to current month
             if current_date.month == 12:  # if current month is 12, set to january
@@ -53,6 +54,7 @@ def create_bill():
 
             # get difference in days before next bill is due
             date_difference = due_date_obj - current_date
+
 
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
@@ -65,18 +67,20 @@ def create_bill():
 # Get all bills
 @app.get("/bill")
 def get_all_bills():
-    all_items = database.show_all()
+    all_bills = database.show_all()
 
-    #debug
-    # print(f"keys:{keys} \n values:{all_items}")
-    # print("hello")
-    serialized = Serialize(keys, all_items).get()
-    return serialized, 200
+    deser = deserialize_rows(Bill, all_bills)
+    #print(deser)
+    return deser, 200
 
 # Get specific bill ID
 @app.get("/bill/<string:id>")
 def get_bill(id):
-    return database.select_record_by_id(id), 200
+    bill = database.select_record_by_id(id)
+
+    deser = deserialize_row(Bill, bill[0])
+
+    return deser, 201
 
 # Delete specific bill by ID
 @app.delete("/bill/<string:id>")

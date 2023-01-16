@@ -39,7 +39,7 @@ def select_record_by_id(id):
     # create cursor
     c = conn.cursor()
 
-    c.execute("SELECT * FROM bills WHERE rowid = ? ", id)
+    c.execute("SELECT rowid, * FROM bills WHERE rowid = ? ", id)
     bill = c.fetchall()
 
     conn.commit()
