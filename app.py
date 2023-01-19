@@ -3,15 +3,16 @@ import database
 import sqlite3
 import uuid
 import decimal  # use this instead
-from Deserializer import deserialize_row, deserialize_rows, Bill
+from data_handler import *
 from orjson import dumps, loads
 
 from datetime import date
 
 app = Flask(__name__)
 
+
 # Keys for bills serializer
-keys = ["bill_id", "bill_name", "amount", "due_date"]
+
 def foo(x: int) -> int:
     return "yes"
 
@@ -28,59 +29,40 @@ def create_bill():
     
     
     """
+    # get json data
     json_data = request.get_json()
-    bill_name: str = json_data['name']
-    bill_amount: decimal = decimal.Decimal(json_data['amount'])
-    due_date: int = int(json_data['due_date'])
-
-    # create due date object
-    current_date = date.today()
-
-    # check if due date has passed or not
-    try:
-        if current_date.day <= int(due_date):  # Due this month
-
-            # create due date object with due date being this month
-            due_date_obj: date = date(current_date.year, current_date.month, int(due_date))
-            date_difference = due_date_obj - current_date
-
-        elif current_date.day  > int(due_date):  # Due next month (add month to date object)
-
-            # add month to current month
-            if current_date.month == 12:  # if current month is 12, set to january
-                due_date_obj = date(current_date.year, 1, int(due_date))
-            else:  # current month is less than 12
-                due_date_obj = date(current_date.year, current_date.month + 1, int(due_date))
-
-            # get difference in days before next bill is due
-            date_difference = due_date_obj - current_date
 
 
-    except ValueError:
-        return {"message": "Date you entered for month was not valid."}, 404
+    # deserialize json
+    new_bill = deserialize_json_on_post(Bill, json_data)
+    #TODO: get date difference of due_date_obj and current_date for "days_left"
 
-    # add bill to DB
-    database.create_bill_record(bill_name, bill_amount, due_date_obj)
+    # add bill to DB, convert bill amount to float for storage only
+    database.create_bill_record(new_bill)
 
-    return {"message": "Everything went well"}, 200
+    return serialize_to_json(new_bill), 200
+
 
 # Get all bills
 @app.get("/bill")
 def get_all_bills():
     all_bills = database.show_all()
 
-    deser = deserialize_rows(Bill, all_bills)
-    #print(deser)
-    return deser, 200
+    deserialized_bills = deserialize_rows(Bill, all_bills)
+
+    # print(deser)
+    return deserialized_bills, 200
+
 
 # Get specific bill ID
 @app.get("/bill/<string:id>")
 def get_bill(id):
-    bill = database.select_record_by_id(id)
+    bill_sqlite = database.select_record_by_id(id)
 
-    deser = deserialize_row(Bill, bill[0])
+    bill_obj = deserialize_row(Bill, bill_sqlite[0])
 
-    return deser, 201
+    return serialize_to_json(bill_obj), 201
+
 
 # Delete specific bill by ID
 @app.delete("/bill/<string:id>")
@@ -89,3 +71,27 @@ def delete_bill_by_id(id):
     return {"message": "Record has been deleted"}, 200
 
     # sort list by days left
+
+
+@app.put("/bill/<string:id>")
+def edit_bill(id):
+
+    # get json_data
+    json_data = request.get_json()
+
+    # add id to json data
+    json_data["id"] = int(id)
+
+    # get bill data based on id number, deserialize data to Bill obj
+
+    bill = deserialize_row(Bill, database.select_record_by_id(id))
+
+    # for field in fields(bill):
+    #     print(field)
+    return {"1":1}
+    # validate json data
+
+
+    #assign new values
+
+
