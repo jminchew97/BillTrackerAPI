@@ -3,22 +3,29 @@ from typing import TypeVar, Optional
 from dataclasses import dataclass, fields
 from decimal import Decimal
 from datetime import date, datetime
-
 import orjson
 import json as json_module
 
-import database
+
 
 
 @dataclass
 class Bill:
+    """A finished bill object including all fields, has been already committed to database"""
     id: int
     name: str
     amount: Decimal
     due_date: datetime.date
 
+@dataclass
+class BillNoID:
+    """A bill data type with no id because it has not been generated and stored in the database yet"""
+    name: str
+    amount: Decimal
+    due_date: datetime.date
 
-class BillPutRequest:
+class BillEdit:
+
     id: int
     name: Optional[str] = None
     amount: Optional[Decimal] = None
@@ -35,17 +42,14 @@ def default(obj: type[T]):
     raise TypeError
 
 
-#                   (any type)    (list)
-def deserialize_row(typ: type[T], row: tuple[type[T]]) -> T:
+#                 (Type of object) (list)
+def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
     """deserialize row from SQLITE"""
-    # set bill properties here
-    # create datetime.date object
 
-    if len(row) <= 1:
+    if len(row) == 1:
         row = row[0]
 
     # TODO figure out error
-    print(f"DESERIALIZE ROW TYPE: {row}")
     date = datetime.strptime(row[3], "%Y-%m-%d").date()
 
     #               id      name    amount                  date
@@ -65,11 +69,10 @@ def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
     return json  # returns dict
 
 
-def deserialize_json_on_post(typ: type[T], json_data: dict) -> type[T]:
-    if typ == Bill:
-
-        new_bill = typ(database.auto_increment_db(), json_data["name"], round(Decimal(json_data['amount']), 2),
-                       dateStrToObj(json_data["due_date"]))
+def deserialize_json_on_post(typ: type[T], json_data: dict) -> T:
+    if typ == BillNoID:
+        print(f"Type of argument before error : {type(round(Decimal(json_data['amount']), 2))}")
+        new_bill = BillNoID(json_data["name"], round(Decimal(json_data['amount']), 2), str_to_date_obj(json_data["due_date"]))
     else:
         raise Exception("Dont know how to deserialize this type of object. You entered type {type(typ}.")
     return new_bill
@@ -87,10 +90,10 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
 def cents_to_dollars(cents_amount: int) -> Decimal:
     dollars = round(Decimal(cents_amount / 100), 2)
     print(f"{cents_amount} -> {dollars}")
-    return dollars
+    return Decimal(dollars)
 
 
-def dateStrToObj(due_date: int) -> date:
+def str_to_date_obj(due_date: int) -> date:
     due_date = int(due_date)
     current_date = datetime.today()
     try:
@@ -114,11 +117,3 @@ def dateStrToObj(due_date: int) -> date:
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
 
-
-# tests
-json = {
-    "id": 1,
-    "name": "bill name",
-    "amount": 10.24,
-    "due_date": "10"
-}
