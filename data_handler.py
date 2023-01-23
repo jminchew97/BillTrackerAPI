@@ -1,13 +1,10 @@
 import dataclasses
 from typing import TypeVar, Optional
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, replace
 from decimal import Decimal
 from datetime import date, datetime
 import orjson
 import json as json_module
-
-
-
 
 @dataclass
 class Bill:
@@ -18,12 +15,13 @@ class Bill:
     due_date: datetime.date
 
 @dataclass
-class BillNoID:
+class BillCreate:
     """A bill data type with no id because it has not been generated and stored in the database yet"""
     name: str
     amount: Decimal
     due_date: datetime.date
 
+@dataclass
 class BillEdit:
 
     id: int
@@ -34,6 +32,7 @@ class BillEdit:
 
 T = TypeVar('T')
 
+# test
 
 # default class for orjson, will auto convert objects not used by orjson
 def default(obj: type[T]):
@@ -53,7 +52,7 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
     date = datetime.strptime(row[3], "%Y-%m-%d").date()
 
     #               id      name    amount                  date
-    new_bill = Bill(row[0], row[1], cents_to_dollars(row[2]), date)  # TODO change string to date, using string to test
+    new_bill = typ(row[0], row[1], cents_to_dollars(row[2]), date)  # TODO change string to date, using string to test
 
     # use orjson to serialize to json
     return new_bill
@@ -70,13 +69,20 @@ def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
 
 
 def deserialize_json_on_post(typ: type[T], json_data: dict) -> T:
-    if typ == BillNoID:
+    if typ == BillCreate:
         print(f"Type of argument before error : {type(round(Decimal(json_data['amount']), 2))}")
-        new_bill = BillNoID(json_data["name"], round(Decimal(json_data['amount']), 2), str_to_date_obj(json_data["due_date"]))
+        new_bill = BillCreate(json_data["name"], round(Decimal(json_data['amount']), 2), str_to_date_obj(json_data["due_date"]))
+
     else:
         raise Exception("Dont know how to deserialize this type of object. You entered type {type(typ}.")
     return new_bill
 
+def deserialize_json_on_put(typ: type[T], jdata: dict) -> T:
+    new_bill = BillEdit(1)
+
+    edited_bill = replace(new_bill, **jdata)
+
+    return edited_bill
 
 def dollars_to_cents(dollar_amount: Decimal) -> int:
     if not isinstance(dollar_amount, Decimal):

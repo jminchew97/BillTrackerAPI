@@ -19,7 +19,7 @@ def create_bill():
     json_data = request.get_json()
 
     # deserialize json to Bill object with no ID (not created yet in DB)
-    new_bill = deserialize_json_on_post(BillNoID, json_data)
+    new_bill = deserialize_json_on_post(BillCreate, json_data)
 
     #TODO add get_bill_by_ID
     return serialize_to_json(db_api.create_bill(new_bill)), 200
@@ -55,4 +55,7 @@ def delete_bill_by_id(id):
 @app.put("/bill/<string:id>")
 def edit_bill(id):
     # TODO edit bill
+    jdata = request.get_json()
+
+
     return {"message":"Not yet implemented"}

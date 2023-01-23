@@ -6,7 +6,7 @@ from data_handler import *
 class BillAPI(ABC):
 
     @abstractmethod
-    def create_bill(self, new_bill: BillNoID) -> str:
+    def create_bill(self, new_bill: BillCreate) -> str:
         pass
 
     @abstractmethod

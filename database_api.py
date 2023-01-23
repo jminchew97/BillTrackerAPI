@@ -3,12 +3,12 @@ from _decimal import Decimal
 from datetime import date
 from data_handler import *
 from BillAPI import BillAPI
-from data_handler import Bill
+from data_handler import Bill, BillCreate
 from uuid import uuid4
 
 
 class BillDBAPI(BillAPI):
-    def create_bill(self, new_bill: BillNoID) -> Bill:
+    def create_bill(self, new_bill: BillCreate) -> Bill:
         # connects to db we name,if it doesn't exist will create it
         conn = sqlite3.connect("bill.db")
 
@@ -26,7 +26,7 @@ class BillDBAPI(BillAPI):
 
         # return bill not that its been created in DB so it can be returned to user
 
-        # todo needs to return the database object
+        # returns created bill
         return deserialize_row(Bill, self.get_bill_by_id(str(id)))
 
     # Query the DB return all records
@@ -80,8 +80,8 @@ class BillDBAPI(BillAPI):
 
     # TODO implement edit bill
     def edit_bill_by_id(self, id: str) -> Bill:
-        pass
 
+        pass
 
 # Other functions
 def get_largest_rowid() -> int:
