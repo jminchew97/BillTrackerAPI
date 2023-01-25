@@ -14,8 +14,6 @@ class BillDBAPI(BillAPI):
 
         # create cursor
         c = conn.cursor()
-
-        # adding in id at time of record creation
         id = _auto_increment_db()
         c.execute("INSERT INTO bills VALUES (?,?,?,?)", (id, new_bill.name,
                                                          dollars_to_cents(new_bill.amount),
@@ -57,7 +55,7 @@ class BillDBAPI(BillAPI):
         # create cursor
         c = conn.cursor()
 
-        c.execute("SELECT * FROM bills WHERE id = ? ", id)
+        c.execute("SELECT * FROM bills WHERE id = ? ", [id])
         bill_row = c.fetchall()
 
         conn.commit()
@@ -72,7 +70,7 @@ class BillDBAPI(BillAPI):
         # create cursor
         c = conn.cursor()
 
-        c.execute("DELETE FROM bills WHERE id = ? ", id)
+        c.execute("DELETE FROM bills WHERE id = ? ", [id])
 
         conn.commit()
         conn.close()
@@ -111,6 +109,5 @@ conn = sqlite3.connect("bill.db")
 
 # create cursor
 c = conn.cursor()
-
 conn.commit()
 conn.close()

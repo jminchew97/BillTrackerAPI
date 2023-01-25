@@ -3,6 +3,7 @@ from typing import TypeVar, Optional
 from dataclasses import dataclass, fields, replace
 from dataclasses_json import dataclass_json
 from decimal import Decimal
+from uuid import uuid4
 from datetime import date, datetime
 import orjson
 import json as json_module
@@ -97,8 +98,6 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
     return new_typ
 
 
-
-
 def deserialize_rows(typ: type[T], rows: list[tuple[object]]) -> list[T]:
     return [deserialize_row(typ, row) for row in rows]
 
@@ -109,16 +108,10 @@ def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
     return json  # returns dict
 
 
-def deserialize_json_on_post(typ: type[T], json_data: dict) -> T:
-    if typ == BillCreate:
-        print(f"Type of argument before error : {type(round(Decimal(json_data['amount']), 2))}")
-        new_bill = BillCreate(json_data["name"], round(Decimal(json_data['amount']), 2),
-                              str_to_date_obj(json_data["due_date"]))
-
-    else:
-        raise Exception("Dont know how to deserialize this type of object. You entered type {type(typ}.")
-    return new_bill
-
+def deserialize_json(typ: type[T], json_data: dict) -> T:
+    json_data["due_date"] = str_to_date_obj(json_data["due_date"])
+    new_typ = typ.from_json(orjson.dumps(json_data))
+    return new_typ
 
 def deserialize_json_on_put(typ: type[T], jdata: dict) -> T:
     new_bill = BillEdit(1)
@@ -135,9 +128,6 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
     cents = int(dollar_amount * 100)
     print(f"dollars to cents: {dollar_amount} -> {cents}")
     return cents
-
-
-
 
 
 def str_to_date_obj(due_date: int) -> date:
@@ -163,3 +153,5 @@ def str_to_date_obj(due_date: int) -> date:
             return due_date_obj
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
+
+
