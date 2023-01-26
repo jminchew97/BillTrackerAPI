@@ -9,15 +9,18 @@ import orjson
 import json as json_module
 
 import data_handler
+
+
 def cents_to_dollars(cents_amount: int) -> Decimal:
     dollars = round(Decimal(cents_amount / 100), 2)
     return Decimal(dollars)
+
 
 @dataclass_json
 @dataclass
 class Bill:
     """A finished bill object including all fields, has been already committed to database"""
-    id: int
+    id: str
     name: str
     amount: Decimal
     due_date: datetime.date
@@ -26,7 +29,6 @@ class Bill:
 @dataclass_json
 @dataclass
 class BillCreate:
-    """A bill data type with no id because it has not been generated and stored in the database yet"""
     name: str
     amount: Decimal
     due_date: datetime.date
@@ -75,7 +77,7 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
         # check what type current field is expecting, then cast value given to that type
         # then append to deserialized_values
         if field_type == int:
-            deserialized_values.append(int(value))
+            deserialized_values.append(value)
 
         elif field_type == str:
             deserialized_values.append(str(value))
@@ -107,7 +109,6 @@ def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
 
 
 def deserialize_json(typ: type[T], jdata: dict) -> T:
-
     # convert due_date ex. 15, to date obj and add to payload
     jdata = add_date_obj_to_payload(jdata)
 
@@ -130,6 +131,7 @@ def add_date_obj_to_payload(jdata: dict) -> dict:
     if "due_date" in jdata:
         jdata["due_date"] = str_to_date_obj(jdata["due_date"])
     return jdata
+
 
 def dollars_to_cents(dollar_amount: Decimal) -> int:
     if not isinstance(dollar_amount, Decimal):
@@ -162,6 +164,5 @@ def str_to_date_obj(due_date: int) -> date:
             return due_date_obj
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
-
 
 # tests

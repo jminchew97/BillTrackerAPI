@@ -14,7 +14,10 @@ class BillDBAPI(BillAPI):
 
         # create cursor
         c = conn.cursor()
-        id = _auto_increment_db()
+
+        # generate UUID
+        id = uuid4().hex
+        print(f"THIS IS THE ID TYPE BEFORE GOING INTO DATABASE  {type(id)}")
         c.execute("INSERT INTO bills VALUES (?,?,?,?)", (id, new_bill.name,
                                                          dollars_to_cents(new_bill.amount),
                                                          new_bill.due_date))
@@ -119,7 +122,7 @@ conn = sqlite3.connect("bill.db")
 
 # create cursor
 c = conn.cursor()
-data = c.execute('''SELECT * FROM bills''')
+data = c.execute(''' ''')
 print(data.description)
 conn.commit()
 conn.close()

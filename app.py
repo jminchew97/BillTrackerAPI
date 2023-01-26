@@ -1,6 +1,5 @@
 from flask import Flask, request
 
-
 from database_api import BillDBAPI
 from data_handler import *
 
@@ -21,7 +20,7 @@ def create_bill():
     # deserialize json to Bill object with no ID (not created yet in DB)
     new_bill = deserialize_json(BillCreate, json_data)
 
-    #TODO add get_bill_by_ID
+    # TODO add get_bill_by_ID
     return serialize_to_json(db_api.create_bill(new_bill)), 200
 
 
@@ -47,7 +46,6 @@ def get_bill_by_id(id: str):
 # Delete specific bill by ID
 @app.delete("/bill/<string:id>")
 def delete_bill_by_id(id):
-
     return db_api.delete_bill_by_id(id)
 
 
@@ -59,7 +57,6 @@ def update_bill(id):
 
     # get specific bill from db
     bill = deserialize_row(Bill, db_api.get_bill_by_id(id))
-
 
     # edit replace bill with new jdata
     edited_bill = edit_bill(bill, jdata)
