@@ -11,7 +11,6 @@ import json as json_module
 import data_handler
 def cents_to_dollars(cents_amount: int) -> Decimal:
     dollars = round(Decimal(cents_amount / 100), 2)
-    print(f"{cents_amount} -> {dollars}")
     return Decimal(dollars)
 
 @dataclass_json
@@ -36,7 +35,6 @@ class BillCreate:
 @dataclass_json
 @dataclass
 class BillEdit:
-    id: int
     name: Optional[str] = None
     amount: Optional[Decimal] = None
     due_date: Optional[datetime.date] = None
@@ -74,7 +72,7 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
     for field, value in zip(fields(typ), row):
 
         field_type = typ.__annotations__[field.name]
-        # check what type current field is expecting, then cast corresponding value to that type
+        # check what type current field is expecting, then cast value given to that type
         # then append to deserialized_values
         if field_type == int:
             deserialized_values.append(int(value))
@@ -108,25 +106,36 @@ def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
     return json  # returns dict
 
 
-def deserialize_json(typ: type[T], json_data: dict) -> T:
-    json_data["due_date"] = str_to_date_obj(json_data["due_date"])
-    new_typ = typ.from_json(orjson.dumps(json_data))
+def deserialize_json(typ: type[T], jdata: dict) -> T:
+
+    # convert due_date ex. 15, to date obj and add to payload
+    jdata = add_date_obj_to_payload(jdata)
+
+    # deserialize json payload
+    new_typ = typ.from_json(orjson.dumps(jdata))
     return new_typ
 
-def deserialize_json_on_put(typ: type[T], jdata: dict) -> T:
-    new_bill = BillEdit(1)
 
-    edited_bill = replace(new_bill, **jdata)
+def edit_bill(bill_obj: Bill, jdata: dict) -> Bill:
+    jdata = add_date_obj_to_payload(jdata)
+
+    # check if update bill in jdata
+
+    edited_bill = replace(bill_obj, **jdata)
 
     return edited_bill
 
 
+def add_date_obj_to_payload(jdata: dict) -> dict:
+    if "due_date" in jdata:
+        jdata["due_date"] = str_to_date_obj(jdata["due_date"])
+    return jdata
+
 def dollars_to_cents(dollar_amount: Decimal) -> int:
     if not isinstance(dollar_amount, Decimal):
-        raise TypeError(f"Expected type Decimal, got {type(dollar_amount)}")
+        dollar_amount = Decimal(dollar_amount)
 
     cents = int(dollar_amount * 100)
-    print(f"dollars to cents: {dollar_amount} -> {cents}")
     return cents
 
 
@@ -155,3 +164,4 @@ def str_to_date_obj(due_date: int) -> date:
         return {"message": "Date you entered for month was not valid."}, 404
 
 
+# tests

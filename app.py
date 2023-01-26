@@ -53,9 +53,16 @@ def delete_bill_by_id(id):
 
 # TODO create edit bill function
 @app.put("/bill/<string:id>")
-def edit_bill(id):
+def update_bill(id):
     # TODO edit bill
     jdata = request.get_json()
 
+    # get specific bill from db
+    bill = deserialize_row(Bill, db_api.get_bill_by_id(id))
 
-    return {"message":"Not yet implemented"}
+
+    # edit replace bill with new jdata
+    edited_bill = edit_bill(bill, jdata)
+
+    # update the bill and return the new bill from D
+    return serialize_to_json(db_api.update_bill(id, edited_bill))

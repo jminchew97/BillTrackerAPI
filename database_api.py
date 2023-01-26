@@ -77,9 +77,19 @@ class BillDBAPI(BillAPI):
         return {"message": "Bill has been deleted"}
 
     # TODO implement edit bill
-    def edit_bill_by_id(self, id: str) -> Bill:
+    def update_bill(self, id: str, edited_bill: Bill) -> Bill:
+        conn = sqlite3.connect("bill.db")
 
-        pass
+        # create cursor
+        c = conn.cursor()
+
+        c.execute("UPDATE bills SET name=?, amount=?, due_date=? WHERE id = ? ",
+                  [edited_bill.name, dollars_to_cents(edited_bill.amount), edited_bill.due_date, edited_bill.id])
+
+        conn.commit()
+        conn.close()
+        return deserialize_row(Bill, self.get_bill_by_id(id))
+
 
 # Other functions
 def get_largest_rowid() -> int:
@@ -109,5 +119,7 @@ conn = sqlite3.connect("bill.db")
 
 # create cursor
 c = conn.cursor()
+data = c.execute('''SELECT * FROM bills''')
+print(data.description)
 conn.commit()
 conn.close()

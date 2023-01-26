@@ -22,5 +22,5 @@ class BillAPI(ABC):
         pass
 
     @abstractmethod
-    def edit_bill_by_id(self, id: str) -> Bill:
+    def update_bill(self, id: str, edited_bill: Bill) -> Bill:
         pass
