@@ -5,6 +5,7 @@ from dataclasses_json import dataclass_json
 from decimal import Decimal
 from uuid import uuid4
 from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 import orjson
 import json as json_module
 
@@ -23,7 +24,7 @@ class Bill:
     id: str
     name: str
     amount: Decimal
-    due_date: datetime.date
+    due_date: date
 
 
 @dataclass_json
@@ -31,7 +32,7 @@ class Bill:
 class BillCreate:
     name: str
     amount: Decimal
-    due_date: datetime.date
+    due_date: date
 
 
 @dataclass_json
@@ -39,7 +40,7 @@ class BillCreate:
 class BillEdit:
     name: Optional[str] = None
     amount: Optional[Decimal] = None
-    due_date: Optional[datetime.date] = None
+    due_date: Optional[date] = None
 
 
 T = TypeVar('T')
@@ -82,7 +83,7 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
         elif field_type == str:
             deserialized_values.append(str(value))
 
-        elif field_type == datetime.date:
+        elif field_type == date:
             deserialized_values.append(datetime.strptime(value, "%Y-%m-%d").date())
 
         # converts to decimal while also converting from_cents_to_dollars, only if this is an "amount" of money
@@ -143,7 +144,7 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
 
 def str_to_date_obj(due_date: int) -> date:
     due_date = int(due_date)
-    current_date = datetime.today()
+    current_date = date.today()
     try:
         if current_date.day <= due_date:  # Bill due this month
 
@@ -152,17 +153,31 @@ def str_to_date_obj(due_date: int) -> date:
             date_difference = due_date_obj - current_date
 
         elif current_date.day > due_date:  # Bill due next month (add month to date object)
+            return increment_month(due_date)
 
-            # add month to current month
-            if current_date.month == 12:  # if current month is 12, set to january
-                due_date_obj = date(current_date.year, 1, due_date)
-
-            # current month is less than 12
-            else:
-                due_date_obj = date(current_date.year, current_date.month + 1, due_date)
-
-            return due_date_obj
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
 
+
+def check_if_due_date_passed(bill: Bill) -> Bill:
+    current_date = date.today()
+    # if bill.due_date < current_date:
+    bill.due_date = increment_month(bill.due_date.day)
+
+    return bill
+
+
+def increment_month(due_date: int) -> date:
+    """return date object with due_date being NEXT month"""
+    due_date_obj = date(date.today().year, date.today().month, due_date)
+
+    due_date_obj = due_date_obj + relativedelta(months=1)
+    return due_date_obj
+
+
 # tests
+
+new_bill = Bill("123", "Electric", Decimal(12), date(2023, 12, 29))
+
+date1 = date(2022,1,25)
+date2 = date(2022,12,25)

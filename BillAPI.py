@@ -24,3 +24,4 @@ class BillAPI(ABC):
     @abstractmethod
     def update_bill(self, id: str, edited_bill: Bill) -> Bill:
         pass
+
