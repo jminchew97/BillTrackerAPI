@@ -143,41 +143,36 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
 
 
 def str_to_date_obj(due_date: int) -> date:
-    due_date = int(due_date)
+
     current_date = date.today()
+    due_date = date(current_date.year, current_date.month, due_date)
     try:
-        if current_date.day <= due_date:  # Bill due this month
-
-            # create due date object with due date being this month
-            due_date_obj: date = date(current_date.year, current_date.month, due_date)
-            date_difference = due_date_obj - current_date
-
-        elif current_date.day > due_date:  # Bill due next month (add month to date object)
+        if current_date.day > due_date.day:  # Bill due next month (add month to date object)
             return increment_month(due_date)
 
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
 
 
-def check_if_due_date_passed(bill: Bill) -> Bill:
-    current_date = date.today()
-    # if bill.due_date < current_date:
-    bill.due_date = increment_month(bill.due_date.day)
+def update_due_date(bill: Bill, current_date: date) -> Bill:
 
+    # set updated due date to current month and year
+    updated_due_date = date(current_date.year, current_date.month, bill.due_date.day)
+
+    if bill.due_date < current_date:
+
+        # if due_day is less than current day, increment month
+        if bill.due_date.day < current_date.day:
+            updated_due_date = increment_month(updated_due_date)
+
+    bill.due_date = updated_due_date
+    print(bill.due_date)
     return bill
 
 
-def increment_month(due_date: int) -> date:
+def increment_month(due_date: date) -> date:
     """return date object with due_date being NEXT month"""
-    due_date_obj = date(date.today().year, date.today().month, due_date)
 
-    due_date_obj = due_date_obj + relativedelta(months=1)
+    due_date_obj = due_date + relativedelta(months=1)
     return due_date_obj
 
-
-# tests
-
-new_bill = Bill("123", "Electric", Decimal(12), date(2023, 12, 29))
-
-date1 = date(2022,1,25)
-date2 = date(2022,12,25)
