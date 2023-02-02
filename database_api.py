@@ -47,7 +47,7 @@ class BillDBAPI(BillAPI):
 
         # Close our connection
         conn.close()
-
+        print("inside db get all funciton, before deserialization", fetched)
         deserialized_bills = deserialize_rows(Bill, fetched)
         return deserialized_bills
 
@@ -123,6 +123,6 @@ conn = sqlite3.connect("bill.db")
 # create cursor
 c = conn.cursor()
 data = c.execute(''' ''')
-print(data.description)
+
 conn.commit()
 conn.close()

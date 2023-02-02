@@ -181,5 +181,7 @@ def increment_month(due_date: date) -> date:
     return due_date_obj
 
 def sort_bills_by_date(bills: list[Bill] ) -> list[Bill]:
+    print("INSIDE SORT BILL FUNC/before sorting")
     bills.sort(key=lambda x: x.due_date)
+
     return bills

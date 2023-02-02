@@ -9,11 +9,24 @@ app = Flask(__name__)
 db_api = BillDBAPI()
 
 
-# Keys for bills serializer
-
+# Load templates
 @app.route('/')
-def hello():
+def index():
     return render_template('index.html')
+
+@app.route('/create')
+def create_page():
+    return render_template('create.html')
+
+@app.route('/edit')
+def edit_page():
+    return render_template('edit.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+# API
 @app.post("/bill")
 def create_bill():
     # get json data
@@ -33,6 +46,7 @@ def get_all_bills():
     # TODO replace with API all_bills = database.show_all()
 
     sorted_bills = sort_bills_by_date(db_api.get_all_bills())
+
     deserialized_bills = serialize_to_json(sorted_bills)
 
     return deserialized_bills, 200
