@@ -84,6 +84,7 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
             deserialized_values.append(str(value))
 
         elif field_type == date:
+
             deserialized_values.append(datetime.strptime(value, "%Y-%m-%d").date())
 
         # converts to decimal while also converting from_cents_to_dollars, only if this is an "amount" of money
@@ -112,7 +113,7 @@ def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
 def deserialize_json(typ: type[T], jdata: dict) -> T:
     # convert due_date ex. 15, to date obj and add to payload
     jdata = add_date_obj_to_payload(jdata)
-
+    print("due_date in json payload after creating date object", jdata)
     # deserialize json payload
     new_typ = typ.from_json(orjson.dumps(jdata))
     return new_typ
@@ -142,14 +143,16 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
     return cents
 
 
-def str_to_date_obj(due_date: int) -> date:
+def str_to_date_obj(due_date: str) -> date:
 
     current_date = date.today()
-    due_date = date(current_date.year, current_date.month, due_date)
+    due_date = date(current_date.year, current_date.month, int(due_date))
     try:
         if current_date.day > due_date.day:  # Bill due next month (add month to date object)
-            return increment_month(due_date)
 
+            return increment_month(due_date)
+        else:
+            return due_date
     except ValueError:
         return {"message": "Date you entered for month was not valid."}, 404
 
@@ -166,7 +169,7 @@ def update_due_date(bill: Bill, current_date: date) -> Bill:
             updated_due_date = increment_month(updated_due_date)
 
     bill.due_date = updated_due_date
-    print(bill.due_date)
+
     return bill
 
 
@@ -174,5 +177,9 @@ def increment_month(due_date: date) -> date:
     """return date object with due_date being NEXT month"""
 
     due_date_obj = due_date + relativedelta(months=1)
+    print("inside increment_month function ", due_date_obj)
     return due_date_obj
 
+def sort_bills_by_date(bills: list[Bill] ) -> list[Bill]:
+    bills.sort(key=lambda x: x.due_date)
+    return bills

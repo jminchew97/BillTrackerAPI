@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 from database_api import BillDBAPI
 from data_handler import *
@@ -11,11 +11,14 @@ db_api = BillDBAPI()
 
 # Keys for bills serializer
 
-
+@app.route('/')
+def hello():
+    return render_template('index.html')
 @app.post("/bill")
 def create_bill():
     # get json data
     json_data = request.get_json()
+
 
     # deserialize json to Bill object with no ID (not created yet in DB)
     new_bill = deserialize_json(BillCreate, json_data)
@@ -29,9 +32,9 @@ def create_bill():
 def get_all_bills():
     # TODO replace with API all_bills = database.show_all()
 
-    deserialized_bills = serialize_to_json(db_api.get_all_bills())
+    sorted_bills = sort_bills_by_date(db_api.get_all_bills())
+    deserialized_bills = serialize_to_json(sorted_bills)
 
-    # print(deser)
     return deserialized_bills, 200
 
 
@@ -39,7 +42,7 @@ def get_all_bills():
 @app.get("/bill/<string:id>")
 def get_bill_by_id(id: str):
     bill = deserialize_row(Bill, db_api.get_bill_by_id(id))
-
+    bill = update_due_date(bill, date.today())
     return serialize_to_json(bill), 201
 
 
@@ -61,5 +64,5 @@ def update_bill(id):
     # edit replace bill with new jdata
     edited_bill = edit_bill(bill, jdata)
 
-    # update the bill and return the new bill from D
+    # update the bill and return the new bill from DB
     return serialize_to_json(db_api.update_bill(id, edited_bill))

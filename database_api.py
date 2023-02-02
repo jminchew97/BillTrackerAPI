@@ -28,10 +28,10 @@ class BillDBAPI(BillAPI):
         # return bill not that its been created in DB so it can be returned to user
 
         # returns created bill
-        return deserialize_row(Bill, self.get_bill_by_id(str(id)))
+        return deserialize_row(Bill, self.get_bill_by_id(id))
 
     # Query the DB return all records
-    def get_all_bills(self) -> list[object]:
+    def get_all_bills(self) -> list[Bill]:
         # connects to db we name,if table doesn't exist will create it
         conn = sqlite3.connect("bill.db")
 
