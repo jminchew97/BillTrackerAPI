@@ -36,48 +36,110 @@
 <script src="../static/main.js"></script>
 <script>
   // .then will return the results into the next .then
-
-  fetch("http://127.0.0.1:5000/bill")
-          .then(res => res.json())
-          .then(jsonData =>
-                  {
-                    console.log(jsonData);
-                    for (let i = 0; i < jsonData.length; i++) {
-                      let bill = jsonData[i]
-                      document.getElementById("table-rows").innerHTML +=
-                              `<tr id="${i}"><th scope="row"><text id="name${i}" class="editField${i}" contentEditable="false">${bill.name}</text></th>` +
-                              `<td contentEditable="false"><text id="amount${i}" class="editField${i}" contentEditable="false">${bill.amount}</text> </td>` +
-                              `<td> Calculate days left here</td>` +
-                              `<td contentEditable="true"><text id="date${i}" class="editField${i}" contentEditable="false">${bill.due_date}</text></td>` +
-                                `<i id="${bill.id}"></i>` +
-                              `<td><button id="${i}" onclick="clickedEditButton(this.id)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td>
-</tr>`
-                    }}
+  async function getJson(url)
+  {
+    let response = await fetch(url);
+    let data = await response.json();
+    return data;
+  }
 
 
 
+  async function main()
+  {
 
-          );
-  function clickedEditButton(id){
+    jdata = await getJson("http://127.0.0.1:5000/bill");
+    for (let i = 0; i < jdata.length; i++)
+    {
+      let bill = jdata[i]
+      document.getElementById("table-rows").innerHTML +=
+              `<form id="form${i}"><tr id="${i}"><th scope="row"><text id="name${i}" class="editField${i}">${bill.name}</text></th>` +
+              `<td ><text id="amount${i}" class="editField${i}">${bill.amount}</text> </td>` +
+              `<td> Calculate days left here</td>` +
+              `<td ><text id="date${i}" class="editField${i}">${bill.due_date}</text></td>` +
+              `<i id="${bill.id}"></i>` +
+              `<td><button id="${i}" onclick="clickedEditButton(this.id, jdata)" type="button" class="btn btn-outline-secondary btn${i}"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td>
+</tr></form>`
+
+
+    }
+  }
+  main();
+
+  function clickedEditButton(id,jdata)
+  {
     const rowId = id;
+
+    // get corresponding bill object
+    let bill = jdata[rowId];
 
     // get the row by using rowId
     const row = document.getElementById(rowId);
 
+
     // get all elements that allow editing by user
     let editFields = document.getElementsByClassName("editField" + rowId);
 
-    // switch each editable element into edit mode
-    for (let i =0; i < editFields.length; i++){
-      editFields[i].setAttribute("contentEditable", "true");
-    }
+    console.log(editFields);
+    // convert text fields into input fields
+    replaceElementsWithNewElements(editFields, createInputElementsFromTextElements(editFields));
+
+    //Add check button next to edit button
+    let editBtn = document.getElementsByClassName("btn"+rowId)[0]; // get the edit button for the row being edited
+
+    // create save edit button
+    let saveEdit = document.createElement("input");
+    let checkMarkIcon = document.createElement("i");
+
+    checkMarkIcon.setAttribute("class", "fa fa-check");
+
+
+    saveEdit.setAttribute("class", editBtn.getAttribute("class"));
+    saveEdit.setAttribute("type", "submit");
+    saveEdit.setAttribute("form", "form"+ rowId);
+    saveEdit.appendChild(checkMarkIcon);
+
+    editBtn.replaceWith(saveEdit);
+
+
 
 
   }
+  function createInputElementsFromTextElements(fields)
+  {
+    let inputElements = [];
+    for (let i =0; i < fields.length; i++)
+    {
+      let currentTextField = fields[i];
+
+      let input = document.createElement("input");
+
+      input.setAttribute("id", currentTextField.id);
+      if (currentTextField.id.includes("amount"))
+      {
+        //TODO cannot figure out why form validation is not working, may need to write my own :/
+        input.setAttribute("type","number");
+        //input.setAttribute("step","0.01");
+        input.setAttribute("min","1");
+      }
+      input.setAttribute("placeholder", currentTextField.innerHTML);
 
 
-  function editBill(id){
-  console.log("implement edit bill");
+      //currentTextField.replaceWith(input);
+      inputElements.push(input);
+
+    }
+    return inputElements;
+  }
+
+  function replaceElementsWithNewElements(oldElements, newElements)
+  {
+    const oldElementsLen = oldElements.length;
+    // swap all old elements with new ones
+    while (newElements.length >0){
+      oldElements[0].replaceWith(newElements[0]);
+      newElements.shift();
+    }
   }
 
 </script>
