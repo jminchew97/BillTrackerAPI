@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- font awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -31,11 +33,6 @@
 </table>
 
 
-
-
-
-
-
 <script src="../static/main.js"></script>
 <script>
   // .then will return the results into the next .then
@@ -45,18 +42,43 @@
           .then(jsonData =>
                   {
                     console.log(jsonData);
-                    for (let i = 0; i < jsonData.length; i++)
-                    {
+                    for (let i = 0; i < jsonData.length; i++) {
                       let bill = jsonData[i]
                       document.getElementById("table-rows").innerHTML +=
-                              `<tr><th scope="row">${bill.name}</th>` +
-                              `<td>${bill.amount}</td>` +
-                              `<td> Calculate days left here</td>`+
-                                      `<td>${bill.due_date}</td> </tr>`
-                    }
-                  }
-          );
+                              `<tr id="${i}"><th scope="row"><text id="name${i}" class="editField${i}" contentEditable="false">${bill.name}</text></th>` +
+                              `<td contentEditable="false"><text id="amount${i}" class="editField${i}" contentEditable="false">${bill.amount}</text> </td>` +
+                              `<td> Calculate days left here</td>` +
+                              `<td contentEditable="true"><text id="date${i}" class="editField${i}" contentEditable="false">${bill.due_date}</text></td>` +
+                                `<i id="${bill.id}"></i>` +
+                              `<td><button id="${i}" onclick="clickedEditButton(this.id)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td>
+</tr>`
+                    }}
 
+
+
+
+          );
+  function clickedEditButton(id){
+    const rowId = id;
+
+    // get the row by using rowId
+    const row = document.getElementById(rowId);
+
+    // get all elements that allow editing by user
+    let editFields = document.getElementsByClassName("editField" + rowId);
+
+    // switch each editable element into edit mode
+    for (let i =0; i < editFields.length; i++){
+      editFields[i].setAttribute("contentEditable", "true");
+    }
+
+
+  }
+
+
+  function editBill(id){
+  console.log("implement edit bill");
+  }
 
 </script>
 <!-- Optional JavaScript -->
