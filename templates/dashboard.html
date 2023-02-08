@@ -58,8 +58,8 @@
               `<td> Calculate days left here</td>` +
               `<td ><text id="date${i}" class="editField${i}">${bill.due_date}</text></td>` +
               `<i id="${bill.id}"></i>` +
-              `<td><button id="${i}" onclick="clickedEditButton(this.id, jdata)" type="button" class="btn btn-outline-secondary btn${i}"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td>
-</tr></form>`
+              `<td><button id="${i}" onclick="clickedEditButton(this.id, jdata)" type="button" class="btn btn-outline-secondary btn${i}"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr> </form>`
+
 
 
     }
@@ -88,19 +88,21 @@
     let editBtn = document.getElementsByClassName("btn"+rowId)[0]; // get the edit button for the row being edited
 
     // create save edit button
-    let saveEdit = document.createElement("input");
+    let saveEdit = document.createElement("button");
     let checkMarkIcon = document.createElement("i");
 
     checkMarkIcon.setAttribute("class", "fa fa-check");
 
 
     saveEdit.setAttribute("class", editBtn.getAttribute("class"));
-    saveEdit.setAttribute("type", "submit");
-    saveEdit.setAttribute("form", "form"+ rowId);
+    //saveEdit.setAttribute("type", "submit");
+    //saveEdit.setAttribute("form", "form"+ rowId);
+    saveEdit.setAttribute("id", rowId);
+
     saveEdit.appendChild(checkMarkIcon);
 
     editBtn.replaceWith(saveEdit);
-
+    saveEdit.addEventListener("click", serializeFormJson, false);
 
 
 
@@ -119,7 +121,6 @@
       {
         //TODO cannot figure out why form validation is not working, may need to write my own :/
         input.setAttribute("type","number");
-        //input.setAttribute("step","0.01");
         input.setAttribute("min","1");
       }
       input.setAttribute("placeholder", currentTextField.innerHTML);
@@ -142,6 +143,13 @@
     }
   }
 
+  function serializeFormJson(event, id)
+  {
+    console.log(document.getElementById(event.currentTarget.id));
+
+
+  }
+  let button = document.getElementById("submit");
 </script>
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
