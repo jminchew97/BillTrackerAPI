@@ -35,7 +35,7 @@
 
 <script src="../static/main.js"></script>
 <script>
-  // .then will return the results into the next .then
+  let isInEditMode = false;
   async function getJson(url)
   {
     let response = await fetch(url);
@@ -68,6 +68,13 @@
 
   function clickedEditButton(id,jdata)
   {
+    if (isInEditMode)
+    {
+      alert("already in edit mode");
+      return 0
+    }
+    isInEditMode = true;
+
     const rowId = id;
 
     // get corresponding bill object
@@ -121,7 +128,7 @@
       {
         //TODO cannot figure out why form validation is not working, may need to write my own :/
         input.setAttribute("type","number");
-        input.setAttribute("min","1");
+        input.setAttribute("min","0");
       }
       input.setAttribute("placeholder", currentTextField.innerHTML);
 
@@ -143,13 +150,15 @@
     }
   }
 
-  function serializeFormJson(event, id)
+  function serializeFormJson(event)
   {
     console.log(document.getElementById(event.currentTarget.id));
 
-
   }
-  let button = document.getElementById("submit");
+  function submitEditToApi(event)
+  {
+  jdata = serializeFormJson(event);
+  }
 </script>
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
