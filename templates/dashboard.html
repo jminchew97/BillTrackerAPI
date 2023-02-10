@@ -99,7 +99,8 @@
 
     checkMarkIcon.setAttribute("class", "fa fa-check");
 
-
+    // Create buttons after clicking edit
+    //Save edit button
     saveEdit.setAttribute("class", editBtn.getAttribute("class") + "btn btn-success");
     //saveEdit.setAttribute("type", "submit");
     //saveEdit.setAttribute("form", "form"+ rowId);
@@ -107,7 +108,16 @@
     //saveEdit.setAttribute("type", "submit");
     saveEdit.appendChild(checkMarkIcon);
 
+
+    // cancel edit button
     editBtn.replaceWith(saveEdit);
+
+    // add
+    saveEdit.insertAdjacentHTML("afterend", "<button class='btn btn-danger'>nvm</button>");
+
+    // add delete button after
+    saveEdit.insertAdjacentHTML("afterend", "<button class='btn btn-danger'>delete</button>");
+
     saveEdit.addEventListener("click", serializeFormJson);
 
     //create uuid parameter for our button function so we can access the uuid later
