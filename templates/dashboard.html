@@ -16,22 +16,23 @@
 <!-- load navbar -->
 <script src="../static/navbar.js"></script>
 
-
+<form>
 <table class="table table-hover">
   <thead class="thead-light">
     <tr>
+      <th scope="col">Row</th>
       <th scope="col">Name</th>
       <th scope="col">Amount</th>
       <th scope="col">Days Left</th>
       <th scope="col">Due Date</th>
     </tr>
   </thead>
+
   <tbody id="table-rows">
 
   </tbody>
-
 </table>
-
+</form>
 
 <script src="../static/main.js"></script>
 <script>
@@ -53,12 +54,12 @@
     {
       let bill = jdata[i]
       document.getElementById("table-rows").innerHTML +=
-              `<form id="form${i}"><tr id="${i}"><th scope="row"><text id="name${i}" class="editField${i}">${bill.name}</text></th>` +
+              `<tr id="${i}"><th scope="row"><text>${i}</text></th>` +
+              `<td ><text id="name${i}" class="editField${i}"> ${bill.name} </text> </td>` +
               `<td ><text id="amount${i}" class="editField${i}">${bill.amount}</text> </td>` +
               `<td> Calculate days left here</td>` +
-              `<td ><text id="date${i}" class="editField${i}">${bill.due_date}</text></td>` +
-              `<i id="${bill.id}"></i>` +
-              `<td><button id="${i}" onclick="clickedEditButton(this.id, jdata)" type="button" class="btn btn-outline-secondary btn${i}"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr> </form>`
+              `<td ><text id="due_date${i}" class="editField${i}">${bill.due_date}</text></td>` +
+              `<td><button id="${i}" onclick="clickedEditButton(this.id, jdata)" type="button" class="btn btn-outline-secondary btn${i}"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
 
 
 
@@ -70,8 +71,7 @@
   {
     if (isInEditMode)
     {
-      alert("already in edit mode");
-      return 0
+      return alert("already in edit mode");
     }
     isInEditMode = true;
 
@@ -87,9 +87,8 @@
     // get all elements that allow editing by user
     let editFields = document.getElementsByClassName("editField" + rowId);
 
-    console.log(editFields);
     // convert text fields into input fields
-    replaceElementsWithNewElements(editFields, createInputElementsFromTextElements(editFields));
+    replaceElementsWithNewElements(editFields, createInputElementsFromTextElements(editFields, rowId));
 
     //Add check button next to edit button
     let editBtn = document.getElementsByClassName("btn"+rowId)[0]; // get the edit button for the row being edited
@@ -101,20 +100,22 @@
     checkMarkIcon.setAttribute("class", "fa fa-check");
 
 
-    saveEdit.setAttribute("class", editBtn.getAttribute("class"));
+    saveEdit.setAttribute("class", editBtn.getAttribute("class") + "btn btn-success");
     //saveEdit.setAttribute("type", "submit");
     //saveEdit.setAttribute("form", "form"+ rowId);
     saveEdit.setAttribute("id", rowId);
-
+    //saveEdit.setAttribute("type", "submit");
     saveEdit.appendChild(checkMarkIcon);
 
     editBtn.replaceWith(saveEdit);
-    saveEdit.addEventListener("click", serializeFormJson, false);
+    saveEdit.addEventListener("click", serializeFormJson);
 
+    //create uuid parameter for our button function so we can access the uuid later
+    saveEdit.UUID = jdata[rowId]['id'];
 
 
   }
-  function createInputElementsFromTextElements(fields)
+  function createInputElementsFromTextElements(fields, rowId)
   {
     let inputElements = [];
     for (let i =0; i < fields.length; i++)
@@ -124,9 +125,9 @@
       let input = document.createElement("input");
 
       input.setAttribute("id", currentTextField.id);
+
       if (currentTextField.id.includes("amount"))
       {
-        //TODO cannot figure out why form validation is not working, may need to write my own :/
         input.setAttribute("type","number");
         input.setAttribute("min","0");
       }
@@ -134,6 +135,7 @@
 
 
       //currentTextField.replaceWith(input);
+      input.setAttribute("class", currentTextField.getAttribute("class"));
       inputElements.push(input);
 
     }
@@ -143,16 +145,57 @@
   function replaceElementsWithNewElements(oldElements, newElements)
   {
     const oldElementsLen = oldElements.length;
-    // swap all old elements with new ones
-    while (newElements.length >0){
-      oldElements[0].replaceWith(newElements[0]);
-      newElements.shift();
+
+    for (let i =0; i< oldElements.length; i++)
+    {
+      oldElements[i].replaceWith(newElements[i]);
+      console.log("old elements len:" + oldElements.length +"  newElements len: "+ newElements.length);
+
     }
   }
 
   function serializeFormJson(event)
   {
-    console.log(document.getElementById(event.currentTarget.id));
+    event.preventDefault();
+    let jdata = {}
+    let rowId = event.currentTarget.id;
+    let row = document.getElementById(rowId);
+    let inputElements = row.getElementsByClassName("editField"+ rowId);
+
+
+    for(let i =0; i< inputElements.length; i++)
+    {
+      let currentElement = inputElements[i];
+
+      // remove UID from the element id i.e name0 -> name
+      let key = currentElement.getAttribute("id").replace(/[0-9]/g, '');
+      let defaultValue = currentElement.getAttribute("placeholder");
+      let value = currentElement.value;
+
+      //TODO this is temporary, need to add due day in backend
+      if (key == "due_date")
+      {
+       value = "6";
+      }
+      if (value == "")
+      {
+        // if user entered no data, set json value to existing value
+        value = defaultValue;
+      }
+      jdata[key] = value;
+    }
+    console.log(jdata);
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:JSON.stringify(jdata)
+    };
+    fetch('http://127.0.0.1:5000/bill/' + event.currentTarget.UUID, requestOptions)
+            .then(response => response.json())
+            .then(data => console.log(data));
+
+    // reload page
+    location.reload();
 
   }
   function submitEditToApi(event)
