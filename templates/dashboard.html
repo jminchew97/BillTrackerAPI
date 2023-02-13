@@ -117,7 +117,7 @@
 
     // add listeners
     saveEdit.addEventListener("click", serializeFormJson, false);
-    
+
     // replace edit button with other buttons
     editBtn.replaceWith(saveEdit,deleteButton,cancelButton);
 
@@ -211,7 +211,7 @@
     };
     fetch('http://127.0.0.1:5000/bill/' + event.currentTarget.UUID, requestOptions)
             .then(response => response.json())
-            .then(data => console.log("working"));
+            .then(data => console.log("working"), location.reload());
 
 
   }
