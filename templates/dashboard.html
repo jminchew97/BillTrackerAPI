@@ -54,21 +54,23 @@
     {
       let bill = jdata[i]
       document.getElementById("table-rows").innerHTML +=
-              `<tr id="${i}"><th scope="row"><text>${i}</text></th>` +
+              `<tr id="${i}" data-bill-uuid="${bill.id}"><th scope="row"><text>${i}</text></th>` +
               `<td ><text id="name${i}" class="editField${i}"> ${bill.name} </text> </td>` +
               `<td ><text id="amount${i}" class="editField${i}">${bill.amount}</text> </td>` +
               `<td> Calculate days left here</td>` +
               `<td ><text id="due_date${i}" class="editField${i}">${bill.due_date}</text></td>` +
-              `<td><button id="${i}" onclick="clickedEditButton(this.id, jdata)" type="button" class="btn btn-outline-secondary btn${i}"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
-
+              `<td><button id="editBtn${i}" data-row-id="${i}" onclick="clickedEditButton(this)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
 
 
     }
   }
   main();
 
-  function clickedEditButton(id,jdata)
+  function clickedEditButton(element)
   {
+    id = element.getAttribute("data-row-id");
+    console.log("getting id=>"+id);
+
     if (isInEditMode)
     {
       return alert("already in edit mode");
@@ -76,14 +78,14 @@
     isInEditMode = true;
 
     const rowId = id;
-
+    console.log("Row id working ->"+rowId);
     // get corresponding bill object
     let bill = jdata[rowId];
 
     // get the row by using rowId
-    const row = document.getElementById(rowId);
+    //const row = document.getElementById(rowId);
 
-
+    console.log("rowID = "+rowId);
     // get all elements that allow editing by user
     let editFields = document.getElementsByClassName("editField" + rowId);
 
@@ -91,34 +93,35 @@
     replaceElementsWithNewElements(editFields, createInputElementsFromTextElements(editFields, rowId));
 
     //Add check button next to edit button
-    let editBtn = document.getElementsByClassName("btn"+rowId)[0]; // get the edit button for the row being edited
+    let editBtn = document.getElementById("editBtn"+rowId); // get the edit button for the row being edited
+    console.log("editBtn"+rowId);
 
     // create save edit button
     let saveEdit = document.createElement("button");
-    let checkMarkIcon = document.createElement("i");
+    let deleteButton = document.createElement("button");
+    let cancelButton = document.createElement("button");
 
+    let checkMarkIcon = document.createElement("i");
     checkMarkIcon.setAttribute("class", "fa fa-check");
 
-    // Create buttons after clicking edit
-    //Save edit button
-    saveEdit.setAttribute("class", editBtn.getAttribute("class") + "btn btn-success");
-    //saveEdit.setAttribute("type", "submit");
-    //saveEdit.setAttribute("form", "form"+ rowId);
-    saveEdit.setAttribute("id", rowId);
-    //saveEdit.setAttribute("type", "submit");
+    // set inner text for delete btn/cancel btn
+    deleteButton.textContent = "delete";
+    cancelButton.textContent = "cancel";
+
+    // set attributes for buttons
+    setAttributes(saveEdit, {"class":"btn btn-success","id":"saveBtn"+rowId , "data-row-id":rowId})
+    setAttributes(deleteButton, {"class":"btn btn-danger"})
+    setAttributes(cancelButton, {"class":"btn btn-danger"})
+    //Append icon to button
     saveEdit.appendChild(checkMarkIcon);
 
+    // add listeners
+    saveEdit.addEventListener("click", serializeFormJson, false);
+    
+    // replace edit button with other buttons
+    editBtn.replaceWith(saveEdit,deleteButton,cancelButton);
 
-    // cancel edit button
-    editBtn.replaceWith(saveEdit);
-
-    // add
-    saveEdit.insertAdjacentHTML("afterend", "<button class='btn btn-danger'>nvm</button>");
-
-    // add delete button after
-    saveEdit.insertAdjacentHTML("afterend", "<button class='btn btn-danger'>delete</button>");
-
-    saveEdit.addEventListener("click", serializeFormJson);
+    
 
     //create uuid parameter for our button function so we can access the uuid later
     saveEdit.UUID = jdata[rowId]['id'];
@@ -166,11 +169,17 @@
 
   function serializeFormJson(event)
   {
+
     event.preventDefault();
+   
     let jdata = {}
-    let rowId = event.currentTarget.id;
+    let element = event.currentTarget;
+    let rowId =  element.getAttribute("data-row-id");
+
     let row = document.getElementById(rowId);
+
     let inputElements = row.getElementsByClassName("editField"+ rowId);
+    
 
 
     for(let i =0; i< inputElements.length; i++)
@@ -194,7 +203,7 @@
       }
       jdata[key] = value;
     }
-    console.log(jdata);
+
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -202,15 +211,25 @@
     };
     fetch('http://127.0.0.1:5000/bill/' + event.currentTarget.UUID, requestOptions)
             .then(response => response.json())
-            .then(data => console.log(data));
+            .then(data => console.log("working"));
 
-    // reload page
-    location.reload();
 
+  }
+  function getBillUUID(rowId)
+  {
+    return document.getElementById(rowId).getAttribute("data-bill-uuid");
   }
   function submitEditToApi(event)
   {
   jdata = serializeFormJson(event);
+  }
+
+  function setAttributes(element, attributes)
+  {
+    for (var key in attributes)
+    {
+      element.setAttribute(key, attributes[key]);
+    }
   }
 </script>
 <!-- Optional JavaScript -->
