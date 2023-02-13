@@ -50,6 +50,7 @@
   {
 
     jdata = await getJson("http://127.0.0.1:5000/bill");
+    // fill out each column and row
     for (let i = 0; i < jdata.length; i++)
     {
       let bill = jdata[i]
@@ -63,9 +64,44 @@
 
 
     }
+
+    // add "create" row at bottom of all rows
+    document.getElementById("table-rows").innerHTML +=
+              `<tr id="create-row" ><th scope="row"><text>new</text></th>` +
+              `<td ><input id="create-name" placeholder="bill name" ></input> </td>` +
+              `<td ><input id="create-amount" placeholder="amount" ></input> </td>` +
+              `<td> Calculate days left here</td>` +
+              `<td ><input id="create-date" placeholder="day due" ></input></td>` +
+              `<td><button id="create-button" type="button" class="btn btn-outline-success"> create</button></td></tr>`
+
+    document.getElementById("create-button").addEventListener("click",postBillToAPI, false);
+    
+
   }
   main();
+  function createJsonFromFormData(){
 
+    billData = {
+    "name":document.getElementById("create-name").value,
+        "amount":document.getElementById("create-amount").value,
+        "due_date":document.getElementById("create-date").value
+    };
+    return billData;
+}
+  function postBillToAPI(event){
+    event.preventDefault();
+    let jdata = createJsonFromFormData();
+    fetch('http://127.0.0.1:5000/bill', {
+        method: 'POST',
+        headers: {
+            accept: 'application.json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jdata),
+        cache: 'default'
+    }).then(resp => resp.json)
+        .then(jdata => console.log(jdata), location.reload()).catch(e => console.log(e));
+}
   function clickedEditButton(element)
   {
     id = element.getAttribute("data-row-id");
@@ -109,22 +145,18 @@
     cancelButton.textContent = "cancel";
 
     // set attributes for buttons
-    setAttributes(saveEdit, {"class":"btn btn-success","id":"saveBtn"+rowId , "data-row-id":rowId})
-    setAttributes(deleteButton, {"class":"btn btn-danger"})
-    setAttributes(cancelButton, {"class":"btn btn-danger"})
+    setAttributes(saveEdit, {"class":"btn btn-success","id":"saveBtn"+rowId , "data-row-id":rowId});
+    setAttributes(deleteButton, {"class":"btn btn-danger", "data-row-id":rowId});
+    setAttributes(cancelButton, {"class":"btn btn-danger"});
     //Append icon to button
     saveEdit.appendChild(checkMarkIcon);
 
     // add listeners
     saveEdit.addEventListener("click", serializeFormJson, false);
-
+    deleteButton.addEventListener("click", deleteBill, false);
     // replace edit button with other buttons
     editBtn.replaceWith(saveEdit,deleteButton,cancelButton);
 
-    
-
-    //create uuid parameter for our button function so we can access the uuid later
-    saveEdit.UUID = jdata[rowId]['id'];
 
 
   }
@@ -209,7 +241,7 @@
       headers: { 'Content-Type': 'application/json' },
       body:JSON.stringify(jdata)
     };
-    fetch('http://127.0.0.1:5000/bill/' + event.currentTarget.UUID, requestOptions)
+    fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
             .then(response => response.json())
             .then(data => console.log("working"), location.reload());
 
@@ -231,6 +263,23 @@
       element.setAttribute(key, attributes[key]);
     }
   }
+  function deleteBill()
+  {
+
+    event.preventDefault();
+
+    let element = event.currentTarget;
+    let rowId =  element.getAttribute("data-row-id");
+
+    const requestOptions = {
+      method: 'DELETE'
+    };
+    fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
+            .then(response => response.json())
+            .then(data => console.log("deleted"), location.reload());
+
+  }
+  
 </script>
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
