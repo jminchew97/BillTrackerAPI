@@ -14,19 +14,12 @@ db_api = BillDBAPI()
 def index():
     return render_template('index.html')
 
-@app.route('/create')
-def create_page():
-    return render_template('create.html')
-
-@app.route('/edit')
-def edit_page():
-    return render_template('edit.html')
 
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
 
-# API
+# Create bill
 @app.post("/bill")
 def create_bill():
     # get json data

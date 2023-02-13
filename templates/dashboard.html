@@ -91,6 +91,10 @@
   function postBillToAPI(event){
     event.preventDefault();
     let jdata = createJsonFromFormData();
+    if (isInEditMode)
+    {
+      return alert("Must cancel edit before you can do any other action.");
+    }
     fetch('http://127.0.0.1:5000/bill', {
         method: 'POST',
         headers: {
@@ -99,8 +103,8 @@
         },
         body: JSON.stringify(jdata),
         cache: 'default'
-    }).then(resp => resp.json)
-        .then(jdata => console.log(jdata), location.reload()).catch(e => console.log(e));
+    }).then(resp => resp.json())
+        .then(jdata => console.log(jdata)).then(() => {window.location.reload() });
 }
   function clickedEditButton(element)
   {
@@ -243,7 +247,7 @@
     };
     fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
             .then(response => response.json())
-            .then(data => console.log("working"), location.reload());
+            .then(data => console.log("working")).then(() => {window.location.reload()});
 
 
   }
@@ -263,20 +267,31 @@
       element.setAttribute(key, attributes[key]);
     }
   }
-  function deleteBill()
+  function deleteBill(event)
   {
-
+    
     event.preventDefault();
+ 
+    
+    
 
     let element = event.currentTarget;
     let rowId =  element.getAttribute("data-row-id");
+    let nameOfBill = document.getElementById("name"+rowId).getAttribute("placeholder");
+
+    console.log(nameOfBill);
+
+    if (!confirm("You are attempting to delete the bill: " + nameOfBill + ". Press 'ok' to confirm. Press 'cancel' to stop. "))
+    {
+      return 0;
+    }
 
     const requestOptions = {
       method: 'DELETE'
     };
     fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
             .then(response => response.json())
-            .then(data => console.log("deleted"), location.reload());
+            .then(data => console.log("deleted")).then(() => {window.location.reload()});
 
   }
   
