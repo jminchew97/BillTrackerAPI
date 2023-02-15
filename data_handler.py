@@ -9,9 +9,6 @@ from dateutil.relativedelta import relativedelta
 import orjson
 import json as json_module
 
-import data_handler
-
-
 def cents_to_dollars(cents_amount: int) -> Decimal:
     dollars = round(Decimal(cents_amount / 100), 2)
     return Decimal(dollars)
@@ -30,9 +27,11 @@ class Bill:
 @dataclass_json
 @dataclass
 class BillCreate:
-    name: str
-    amount: Decimal
-    due_date: date
+    def __init__(self, name: str, amount: Decimal, due_date: date):
+        self.name = name
+        self.amount = amount
+        self.due_date = due_date
+    
 
 
 @dataclass_json
@@ -104,23 +103,21 @@ def deserialize_rows(typ: type[T], rows: list[tuple[object]]) -> list[T]:
     return [deserialize_row(typ, row) for row in rows]
 
 
-def serialize_to_json(typ: dataclasses.dataclass()) -> dict:
+def serialize_to_json(typ: Bill) -> dict:
     json_byte: bytes = orjson.dumps(typ, default=default)
     json = orjson.loads(json_byte)
     return json  # returns dict
 
 
 def deserialize_json(typ: type[T], jdata: dict) -> T:
-    # convert due_date ex. 15, to date obj and add to payload
-    jdata = add_date_obj_to_payload(jdata)
-    print("due_date in json payload after creating date object", jdata)
+
     # deserialize json payload
-    new_typ = typ.from_json(orjson.dumps(jdata))
+    new_typ = typ(**jdata)
+    
     return new_typ
 
 
 def edit_bill(bill_obj: Bill, jdata: dict) -> Bill:
-    jdata = add_date_obj_to_payload(jdata)
 
     # check if update bill in jdata
 
@@ -129,10 +126,7 @@ def edit_bill(bill_obj: Bill, jdata: dict) -> Bill:
     return edited_bill
 
 
-def add_date_obj_to_payload(jdata: dict) -> dict:
-    if "due_date" in jdata:
-        jdata["due_date"] = str_to_date_obj(jdata["due_date"])
-    return jdata
+
 
 
 def dollars_to_cents(dollar_amount: Decimal) -> int:
@@ -143,10 +137,17 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
     return cents
 
 
-def str_to_date_obj(due_date: str) -> date:
+def str_to_date_obj(due_date_str: str) -> date:
 
     current_date = date.today()
-    due_date = date(current_date.year, current_date.month, int(due_date))
+
+    # create date from formated date string from client
+    user_due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
+    
+
+
+    # make due date this month so we can calculate when its NEXT due
+    due_date = date(current_date.year, current_date.month, user_due_date.day)
     try:
         if current_date.day > due_date.day:  # Bill due next month (add month to date object)
 
@@ -185,3 +186,4 @@ def sort_bills_by_date(bills: list[Bill] ) -> list[Bill]:
     bills.sort(key=lambda x: x.due_date)
 
     return bills
+

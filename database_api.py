@@ -9,6 +9,9 @@ from uuid import uuid4
 
 class BillDBAPI(BillAPI):
     def create_bill(self, new_bill: BillCreate) -> Bill:
+        """Takes BillCreate (Bill without ID), and adds to database 
+        and returns the Bill object with the ID
+        """
         # connects to db we name,if it doesn't exist will create it
         conn = sqlite3.connect("bill.db")
 
@@ -17,7 +20,7 @@ class BillDBAPI(BillAPI):
 
         # generate UUID
         id = uuid4().hex
-        print(f"THIS IS THE ID TYPE BEFORE GOING INTO DATABASE  {type(id)}")
+        
         c.execute("INSERT INTO bills VALUES (?,?,?,?)", (id, new_bill.name,
                                                          dollars_to_cents(new_bill.amount),
                                                          new_bill.due_date))

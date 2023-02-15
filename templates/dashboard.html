@@ -71,7 +71,7 @@
               `<td ><input id="create-name" placeholder="bill name" ></input> </td>` +
               `<td ><input id="create-amount" placeholder="amount" ></input> </td>` +
               `<td> Calculate days left here</td>` +
-              `<td ><input id="create-date" placeholder="day due" ></input></td>` +
+              `<td ><input id="create-date" type="date" placeholder="day due" ></input></td>` +
               `<td><button id="create-button" type="button" class="btn btn-outline-success"> create</button></td></tr>`
 
     document.getElementById("create-button").addEventListener("click",postBillToAPI, false);
@@ -103,8 +103,19 @@
         },
         body: JSON.stringify(jdata),
         cache: 'default'
-    }).then(resp => resp.json())
-        .then(jdata => console.log(jdata)).then(() => {window.location.reload() });
+    }).then(resp =>
+    {
+      if (resp.ok)
+      {
+        return resp.json().then(jdata=> console.log(jdata)).then(() => {window.location.reload() })
+      }
+      else 
+      {
+        return resp.json().then((jdata)=> {
+          alert(jdata["message"]);
+        });
+      }
+    })
 }
   function clickedEditButton(element)
   {
@@ -180,6 +191,10 @@
         input.setAttribute("type","number");
         input.setAttribute("min","0");
       }
+      else if (currentTextField.id.includes("date"))
+      {
+        input.setAttribute("type","date");
+      }
       input.setAttribute("placeholder", currentTextField.innerHTML);
 
 
@@ -227,17 +242,8 @@
       let defaultValue = currentElement.getAttribute("placeholder");
       let value = currentElement.value;
 
-      //TODO this is temporary, need to add due day in backend
-      if (key == "due_date")
-      {
-       value = "6";
-      }
-      if (value == "")
-      {
-        // if user entered no data, set json value to existing value
-        value = defaultValue;
-      }
       jdata[key] = value;
+
     }
 
     const requestOptions = {

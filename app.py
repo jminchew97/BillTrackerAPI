@@ -25,11 +25,13 @@ def create_bill():
     # get json data
     json_data = request.get_json()
 
-
     # deserialize json to Bill object with no ID (not created yet in DB)
     new_bill = deserialize_json(BillCreate, json_data)
-
-    # TODO add get_bill_by_ID
+    
+    if Decimal(new_bill.amount) < 0:
+        
+        return {"message":"error number is negative"}, 404
+    # Return created bill from DB to verify completion
     return serialize_to_json(db_api.create_bill(new_bill)), 200
 
 
