@@ -108,7 +108,7 @@ def serialize_to_json(typ: Bill) -> dict:
     json = orjson.loads(json_byte)
     return json  # returns dict
 
-def validate(typ: type[T]) -> T:
+def validate(typ: type[T]):
     """validates type (BillCreate, Bill, EditBill
     makes sure that amount is greater than 0, can add more validation later if needed on name, date, etc
     """
@@ -120,15 +120,25 @@ def validate(typ: type[T]) -> T:
     for field in fields(typ):
         
         # converts to decimal while also converting from_cents_to_dollars, only if this is an "amount" of money
-        
-        if field.name == "amount" and getattr(typ, field.name) != None:
-            
-            if Decimal(getattr(typ, field.name)) <= 0 :
-                return {"message":"Number must be greater than 0"}
+        if getattr(typ, field.name) != None:
+                
+            if field.name == "amount":
+                
+                if Decimal(getattr(typ, field.name)) <= 0 :
+                    return {"message":"Number must be greater than 0"}
+            elif field.name == "due_date":
+                date= getattr(typ, field.name)
 
+                if isinstance(date, str):
+                    date = str_to_date_obj(date)
+                
+                if date.day > 28:
+                    return {"message":"You must have a reccuring date below 28th"}
     return None
-def deserialize_json(typ: type[T], jdata: dict) -> T:
 
+def deserialize_json(typ: type[T], jdata: dict) -> T:
+    print(f"this is type: {type(typ)} and the json due_date value is {type(jdata['due_date'])}")
+    jdata["due_date"] = str_to_date_obj(jdata["due_date"])
     # deserialize json payload
     new_typ = typ(**jdata)
     

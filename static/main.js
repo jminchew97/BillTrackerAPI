@@ -203,11 +203,22 @@ let isInEditMode = false;
       let key = currentElement.getAttribute("id").replace(/[0-9]/g, '');
       let defaultValue = currentElement.getAttribute("placeholder");
       let value = currentElement.value;
+      console.log(value)
+      if (value == "")
+      {
+        
+        jdata[key] = defaultValue;
 
-      jdata[key] = value;
+      }
+      else
+      {
+        console.log("EVERYTHING IS FINE")
+        jdata[key] = value;
+      }
+      
 
     }
-
+    
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

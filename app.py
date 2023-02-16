@@ -72,11 +72,13 @@ def update_bill(id):
     # get specific bill from db
     bill = deserialize_row(Bill, db_api.get_bill_by_id(id))
 
+    
     # edit replace bill with new jdata
     edited_bill = edit_bill(bill, jdata)
     
     validated = validate(edited_bill)
     if  validated != None:
         return validated, 404
+    
     # update the bill and return the new bill from DB
     return serialize_to_json(db_api.update_bill(id, edited_bill))

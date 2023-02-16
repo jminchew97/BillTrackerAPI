@@ -3,7 +3,7 @@ from _decimal import Decimal
 from datetime import date
 from data_handler import *
 from BillAPI import BillAPI
-from data_handler import Bill, BillCreate
+from data_handler import Bill, BillCreate, str_to_date_obj
 from uuid import uuid4
 
 
