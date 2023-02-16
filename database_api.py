@@ -7,6 +7,7 @@ from data_handler import Bill, BillCreate, str_to_date_obj
 from uuid import uuid4
 
 
+todays_date = date.today()
 class BillDBAPI(BillAPI):
     def create_bill(self, new_bill: BillCreate) -> Bill:
         """Takes BillCreate (Bill without ID), and adds to database 
@@ -31,7 +32,7 @@ class BillDBAPI(BillAPI):
         # return bill not that its been created in DB so it can be returned to user
 
         # returns created bill
-        return deserialize_row(Bill, self.get_bill_by_id(id))
+        return deserialize_row(Bill, self.get_bill_by_id(id),todays_date)
 
     # Query the DB return all records
     def get_all_bills(self) -> list[Bill]:
@@ -51,7 +52,7 @@ class BillDBAPI(BillAPI):
         # Close our connection
         conn.close()
         print("inside db get all funciton, before deserialization", fetched)
-        deserialized_bills = deserialize_rows(Bill, fetched)
+        deserialized_bills = deserialize_rows(Bill, fetched, todays_date)
         return deserialized_bills
 
     def get_bill_by_id(self, id: str) -> list[tuple[object]]:
@@ -94,7 +95,7 @@ class BillDBAPI(BillAPI):
 
         conn.commit()
         conn.close()
-        return deserialize_row(Bill, self.get_bill_by_id(id))
+        return deserialize_row(Bill, self.get_bill_by_id(id), todays_date)
 
 
 # Other functions

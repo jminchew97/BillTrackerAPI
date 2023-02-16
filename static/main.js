@@ -16,11 +16,20 @@ let isInEditMode = false;
     for (let i = 0; i < jdata.length; i++)
     {
       let bill = jdata[i]
+
+      // calculate date differences
+      const oneDay = 24 * 60 * 60 * 1000;
+      let todays_date = new Date();
+      let due_date = Date.parse(bill['due_date']);
+
+      var days_left = Math.round(Math.abs((due_date - todays_date) / oneDay));
+    
+
       document.getElementById("table-rows").innerHTML +=
               `<tr id="${i}" data-bill-uuid="${bill.id}"><th scope="row"><text>${i}</text></th>` +
               `<td ><text id="name${i}" class="editField${i}"> ${bill.name} </text> </td>` +
               `<td ><text id="amount${i}" class="editField${i}">${bill.amount}</text> </td>` +
-              `<td> Calculate days left here</td>` +
+              `<td> ${days_left}</td>` +
               `<td ><text id="due_date${i}" class="editField${i}">${bill.due_date}</text></td>` +
               `<td><button id="editBtn${i}" data-row-id="${i}" onclick="clickedEditButton(this)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
 

@@ -19,6 +19,7 @@ def index():
 def dashboard():
     return render_template('dashboard.html')
 
+todays_date = date.today()
 # Create bill
 @app.post("/bill")
 def create_bill():
@@ -26,12 +27,13 @@ def create_bill():
     json_data = request.get_json()
 
     # deserialize json to Bill object with no ID (not created yet in DB)
-    new_bill = deserialize_json(BillCreate, json_data)
+    new_bill = deserialize_json(BillCreate, json_data, todays_date)
     
+    print(f"current date test: {todays_date}")
     #validation 
-    if validate(new_bill) != None:
+    if validate(new_bill, todays_date) != None:
         
-        return validate(new_bill), 404
+        return validate(new_bill, todays_date), 404
     
     # Return created bill from DB to verify completion
     return serialize_to_json(db_api.create_bill(new_bill)), 200
@@ -52,31 +54,33 @@ def get_all_bills():
 # Get specific bill ID
 @app.get("/bill/<string:id>")
 def get_bill_by_id(id: str):
-    bill = deserialize_row(Bill, db_api.get_bill_by_id(id))
-    bill = update_due_date(bill, date.today())
+    bill = deserialize_row(Bill, db_api.get_bill_by_id(id), todays_date)
+
     return serialize_to_json(bill), 201
 
 
 # Delete specific bill by ID
 @app.delete("/bill/<string:id>")
 def delete_bill_by_id(id):
+
     return db_api.delete_bill_by_id(id)
 
 
 # TODO create edit bill function
 @app.put("/bill/<string:id>")
 def update_bill(id):
+
     # TODO edit bill
     jdata = request.get_json()
 
     # get specific bill from db
-    bill = deserialize_row(Bill, db_api.get_bill_by_id(id))
+    bill = deserialize_row(Bill, db_api.get_bill_by_id(id), todays_date)
 
     
     # edit replace bill with new jdata
     edited_bill = edit_bill(bill, jdata)
     
-    validated = validate(edited_bill)
+    validated = validate(edited_bill, todays_date)
     if  validated != None:
         return validated, 404
     

@@ -55,7 +55,7 @@ def default(obj: type[T]):
 
 
 #                 (Type of object) (list)
-def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
+def deserialize_row(typ: type[T], row: list[tuple[object]], current_date: date) -> T:
     """deserialize row from SQLITE"""
 
     # checks to see if there's single row in the returned list i.e [[1,"a",12.3]],
@@ -83,9 +83,10 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
             deserialized_values.append(str(value))
 
         elif field_type == date:
+            due_date = set_due_date(datetime.strptime(value, "%Y-%m-%d").date(), current_date )
+            deserialized_values.append(due_date)
 
-            deserialized_values.append(datetime.strptime(value, "%Y-%m-%d").date())
-
+            
         # converts to decimal while also converting from_cents_to_dollars, only if this is an "amount" of money
         elif field_type == Decimal and field.name == "amount":
             deserialized_values.append(cents_to_dollars(value))
@@ -96,11 +97,12 @@ def deserialize_row(typ: type[T], row: list[tuple[object]]) -> T:
     # create new type, unpack dezerialized_values
     new_typ = typ(*deserialized_values)
 
+    
     return new_typ
 
 
-def deserialize_rows(typ: type[T], rows: list[tuple[object]]) -> list[T]:
-    return [deserialize_row(typ, row) for row in rows]
+def deserialize_rows(typ: type[T], rows: list[tuple[object]], current_date:date) -> list[T]:
+    return [deserialize_row(typ, row, current_date) for row in rows]
 
 
 def serialize_to_json(typ: Bill) -> dict:
@@ -108,7 +110,7 @@ def serialize_to_json(typ: Bill) -> dict:
     json = orjson.loads(json_byte)
     return json  # returns dict
 
-def validate(typ: type[T]):
+def validate(typ: type[T], current_date: date):
     """validates type (BillCreate, Bill, EditBill
     makes sure that amount is greater than 0, can add more validation later if needed on name, date, etc
     """
@@ -130,15 +132,15 @@ def validate(typ: type[T]):
                 date= getattr(typ, field.name)
 
                 if isinstance(date, str):
-                    date = str_to_date_obj(date)
+                    date = str_to_date_obj(date, current_date)
                 
                 if date.day > 28:
                     return {"message":"You must have a reccuring date below 28th"}
     return None
 
-def deserialize_json(typ: type[T], jdata: dict) -> T:
+def deserialize_json(typ: type[T], jdata: dict, current_date:date) -> T:
     print(f"this is type: {type(typ)} and the json due_date value is {type(jdata['due_date'])}")
-    jdata["due_date"] = str_to_date_obj(jdata["due_date"])
+    jdata["due_date"] = str_to_date_obj(jdata["due_date"], current_date)
     # deserialize json payload
     new_typ = typ(**jdata)
     
@@ -165,15 +167,16 @@ def dollars_to_cents(dollar_amount: Decimal) -> int:
     return cents
 
 
-def str_to_date_obj(due_date_str: str) -> date:
+def str_to_date_obj(due_date_str: str, current_date: date) -> date:
 
-    current_date = date.today()
 
     # create date from formated date string from client
     user_due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
     
+    return set_due_date(user_due_date, current_date)
 
 
+def set_due_date(user_due_date: date, current_date:date) -> date:
     # make due date this month so we can calculate when its NEXT due
     due_date = date(current_date.year, current_date.month, user_due_date.day)
     try:
@@ -215,6 +218,4 @@ def sort_bills_by_date(bills: list[Bill] ) -> list[Bill]:
 
     return bills
 
-new = BillCreate("billy",-0,"1010-1-1")
 
-print(validate(new))
