@@ -27,10 +27,10 @@ class Bill:
 @dataclass_json
 @dataclass
 class BillCreate:
-    def __init__(self, name: str, amount: Decimal, due_date: date):
-        self.name = name
-        self.amount = amount
-        self.due_date = due_date
+    name: str
+    amount: Decimal
+    due_date:date
+
     
 
 
@@ -108,7 +108,25 @@ def serialize_to_json(typ: Bill) -> dict:
     json = orjson.loads(json_byte)
     return json  # returns dict
 
+def validate(typ: type[T]) -> T:
+    """validates type (BillCreate, Bill, EditBill
+    makes sure that amount is greater than 0, can add more validation later if needed on name, date, etc
+    """
 
+
+    
+    # iterate through typ field with corresponding value
+    
+    for field in fields(typ):
+        
+        # converts to decimal while also converting from_cents_to_dollars, only if this is an "amount" of money
+        
+        if field.name == "amount" and getattr(typ, field.name) != None:
+            
+            if Decimal(getattr(typ, field.name)) <= 0 :
+                return {"message":"Number must be greater than 0"}
+
+    return None
 def deserialize_json(typ: type[T], jdata: dict) -> T:
 
     # deserialize json payload
@@ -187,3 +205,6 @@ def sort_bills_by_date(bills: list[Bill] ) -> list[Bill]:
 
     return bills
 
+new = BillCreate("billy",-0,"1010-1-1")
+
+print(validate(new))

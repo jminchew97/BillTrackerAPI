@@ -28,9 +28,11 @@ def create_bill():
     # deserialize json to Bill object with no ID (not created yet in DB)
     new_bill = deserialize_json(BillCreate, json_data)
     
-    if Decimal(new_bill.amount) < 0:
+    #validation 
+    if validate(new_bill) != None:
         
-        return {"message":"error number is negative"}, 404
+        return validate(new_bill), 404
+    
     # Return created bill from DB to verify completion
     return serialize_to_json(db_api.create_bill(new_bill)), 200
 
@@ -72,6 +74,9 @@ def update_bill(id):
 
     # edit replace bill with new jdata
     edited_bill = edit_bill(bill, jdata)
-
+    
+    validated = validate(edited_bill)
+    if  validated != None:
+        return validated, 404
     # update the bill and return the new bill from DB
     return serialize_to_json(db_api.update_bill(id, edited_bill))
