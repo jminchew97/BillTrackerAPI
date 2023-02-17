@@ -3,12 +3,46 @@ from _decimal import Decimal
 from datetime import date
 from data_handler import *
 from BillAPI import BillAPI
-from data_handler import Bill, BillCreate, str_to_date_obj
+from data_handler import Bill, BillCreate, User, UserCreate
 from uuid import uuid4
 
 
 todays_date = date.today()
 class BillDBAPI(BillAPI):
+
+    def create_user(self, UserCreate):
+        #connects to db we name,if it doesn't exist will create it
+        conn = sqlite3.connect("bill.db")
+
+        # create cursor
+        c = conn.cursor()
+
+        # generate UUID
+        id = uuid4().hex
+        
+        c.execute("INSERT INTO Users VALUES (?,?,?,?)", (id, UserCreate.username,
+                                                            UserCreate.password))
+
+        conn.commit()
+        conn.close()
+    def get_all_users(self) -> list[Bill]:
+        # connects to db we name,if table doesn't exist will create it
+        conn = sqlite3.connect("bill.db")
+
+        # create cursor
+        c = conn.cursor()
+
+        # Query the whole DB
+        c.execute("SELECT * FROM Users")
+        fetched = c.fetchall()
+
+        # Commit our command
+        conn.commit()
+
+        # Close our connection
+        conn.close()
+        deserialized_users= deserialize_rows(User, fetched, todays_date)
+        return deserialized_users
     def create_bill(self, new_bill: BillCreate) -> Bill:
         """Takes BillCreate (Bill without ID), and adds to database 
         and returns the Bill object with the ID
@@ -23,8 +57,8 @@ class BillDBAPI(BillAPI):
         id = uuid4().hex
         
         c.execute("INSERT INTO bills VALUES (?,?,?,?)", (id, new_bill.name,
-                                                         dollars_to_cents(new_bill.amount),
-                                                         new_bill.due_date))
+                                                            dollars_to_cents(new_bill.amount),
+                                                            new_bill.due_date))
 
         conn.commit()
         conn.close()
@@ -52,7 +86,7 @@ class BillDBAPI(BillAPI):
         # Close our connection
         conn.close()
         print("inside db get all funciton, before deserialization", fetched)
-        deserialized_bills = deserialize_rows(Bill, fetched, todays_date)
+        deserialized_bills = deserialize_rows(Bill, fetched)
         return deserialized_bills
 
     def get_bill_by_id(self, id: str) -> list[tuple[object]]:
@@ -91,7 +125,7 @@ class BillDBAPI(BillAPI):
         c = conn.cursor()
 
         c.execute("UPDATE bills SET name=?, amount=?, due_date=? WHERE id = ? ",
-                  [edited_bill.name, dollars_to_cents(edited_bill.amount), edited_bill.due_date, edited_bill.id])
+                    [edited_bill.name, dollars_to_cents(edited_bill.amount), edited_bill.due_date, edited_bill.id])
 
         conn.commit()
         conn.close()

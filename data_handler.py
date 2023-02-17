@@ -9,10 +9,21 @@ from dateutil.relativedelta import relativedelta
 import orjson
 import json as json_module
 
-def cents_to_dollars(cents_amount: int) -> Decimal:
-    dollars = round(Decimal(cents_amount / 100), 2)
-    return Decimal(dollars)
 
+@dataclass_json
+@dataclass
+class UserCreate:
+    """user without id, going into db"""
+    username: str
+    password: str
+
+@dataclass_json
+@dataclass
+class User:
+    """A finished user object including all fields, extracting from db"""
+    id: str
+    username: str
+    password: str
 
 @dataclass_json
 @dataclass
@@ -30,9 +41,6 @@ class BillCreate:
     name: str
     amount: Decimal
     due_date:date
-
-    
-
 
 @dataclass_json
 @dataclass
@@ -54,8 +62,8 @@ def default(obj: type[T]):
     raise TypeError
 
 
-#                 (Type of object) (list)
-def deserialize_row(typ: type[T], row: list[tuple[object]], current_date: date) -> T:
+
+def deserialize_row(typ: type[T], row: list[tuple[object]], current_date: date = date.today()) -> T:
     """deserialize row from SQLITE"""
 
     # checks to see if there's single row in the returned list i.e [[1,"a",12.3]],
@@ -83,7 +91,11 @@ def deserialize_row(typ: type[T], row: list[tuple[object]], current_date: date) 
             deserialized_values.append(str(value))
 
         elif field_type == date:
-            due_date = set_due_date(datetime.strptime(value, "%Y-%m-%d").date(), current_date )
+            try:
+
+                due_date = set_due_date(datetime.strptime(value, "%Y-%m-%d").date(), current_date )
+            except:
+                print("Missing current_date argument")
             deserialized_values.append(due_date)
 
             
@@ -101,8 +113,8 @@ def deserialize_row(typ: type[T], row: list[tuple[object]], current_date: date) 
     return new_typ
 
 
-def deserialize_rows(typ: type[T], rows: list[tuple[object]], current_date:date) -> list[T]:
-    return [deserialize_row(typ, row, current_date) for row in rows]
+def deserialize_rows(typ: type[T], rows: list[tuple[object]]) -> list[T]:
+    return [deserialize_row(typ, row ) for row in rows]
 
 
 def serialize_to_json(typ: Bill) -> dict:
@@ -110,6 +122,9 @@ def serialize_to_json(typ: Bill) -> dict:
     json = orjson.loads(json_byte)
     return json  # returns dict
 
+def cents_to_dollars(cents_amount: int) -> Decimal:
+    dollars = round(Decimal(cents_amount / 100), 2)
+    return Decimal(dollars)
 def validate(typ: type[T], current_date: date):
     """validates type (BillCreate, Bill, EditBill
     makes sure that amount is greater than 0, can add more validation later if needed on name, date, etc
@@ -138,7 +153,7 @@ def validate(typ: type[T], current_date: date):
                     return {"message":"You must have a reccuring date below 28th"}
     return None
 
-def deserialize_json(typ: type[T], jdata: dict, current_date:date) -> T:
+def deserialize_json(typ: type[T], jdata: dict, current_date:date = date.today()) -> T:
     print(f"this is type: {type(typ)} and the json due_date value is {type(jdata['due_date'])}")
     jdata["due_date"] = str_to_date_obj(jdata["due_date"], current_date)
     # deserialize json payload

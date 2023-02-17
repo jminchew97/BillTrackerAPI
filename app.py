@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, flash
 
 from database_api import BillDBAPI
 from data_handler import *
@@ -19,6 +19,10 @@ def index():
 def dashboard():
     return render_template('dashboard.html')
 
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
 todays_date = date.today()
 # Create bill
 @app.post("/bill")
@@ -27,7 +31,7 @@ def create_bill():
     json_data = request.get_json()
 
     # deserialize json to Bill object with no ID (not created yet in DB)
-    new_bill = deserialize_json(BillCreate, json_data, todays_date)
+    new_bill = deserialize_json(BillCreate, json_data)
     
     print(f"current date test: {todays_date}")
     #validation 
