@@ -16,7 +16,7 @@ class UserCreate:
     """user without id, going into db"""
     username: str
     password: str
-
+    email:str
 @dataclass_json
 @dataclass
 class User:
@@ -24,7 +24,7 @@ class User:
     id: str
     username: str
     password: str
-
+    email:str
 @dataclass_json
 @dataclass
 class Bill:
@@ -33,7 +33,7 @@ class Bill:
     name: str
     amount: Decimal
     due_date: date
-
+    
 
 @dataclass_json
 @dataclass
@@ -41,6 +41,7 @@ class BillCreate:
     name: str
     amount: Decimal
     due_date:date
+
 
 @dataclass_json
 @dataclass
@@ -117,7 +118,7 @@ def deserialize_rows(typ: type[T], rows: list[tuple[object]]) -> list[T]:
     return [deserialize_row(typ, row ) for row in rows]
 
 
-def serialize_to_json(typ: Bill) -> dict:
+def serialize_to_json(typ: type[T]) -> dict:
     json_byte: bytes = orjson.dumps(typ, default=default)
     json = orjson.loads(json_byte)
     return json  # returns dict
@@ -154,8 +155,9 @@ def validate(typ: type[T], current_date: date):
     return None
 
 def deserialize_json(typ: type[T], jdata: dict, current_date:date = date.today()) -> T:
-    print(f"this is type: {type(typ)} and the json due_date value is {type(jdata['due_date'])}")
-    jdata["due_date"] = str_to_date_obj(jdata["due_date"], current_date)
+    if "due_date" in jdata:
+        jdata["due_date"] = str_to_date_obj(jdata["due_date"], current_date)
+
     # deserialize json payload
     new_typ = typ(**jdata)
     

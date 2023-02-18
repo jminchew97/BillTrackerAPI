@@ -5,7 +5,7 @@ from data_handler import *
 from BillAPI import BillAPI
 from data_handler import Bill, BillCreate, User, UserCreate
 from uuid import uuid4
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 todays_date = date.today()
 class BillDBAPI(BillAPI):
@@ -20,12 +20,16 @@ class BillDBAPI(BillAPI):
         # generate UUID
         id = uuid4().hex
         
-        c.execute("INSERT INTO Users VALUES (?,?,?,?)", (id, UserCreate.username,
-                                                            UserCreate.password))
+        # hash password
+        hashed_pass =  generate_password_hash(UserCreate.password,method="sha256")
+        c.execute("INSERT INTO Users VALUES (?,?,?,?)", (id, 
+        UserCreate.username,
+        hashed_pass,
+        UserCreate.email))
 
         conn.commit()
         conn.close()
-    def get_all_users(self) -> list[Bill]:
+    def get_all_users(self) -> list[User]:
         # connects to db we name,if table doesn't exist will create it
         conn = sqlite3.connect("bill.db")
 
@@ -41,8 +45,11 @@ class BillDBAPI(BillAPI):
 
         # Close our connection
         conn.close()
-        deserialized_users= deserialize_rows(User, fetched, todays_date)
+        print("before deserialized", fetched)
+        deserialized_users= deserialize_rows(User, fetched)
+        print("DESERIALIZED USERS ", deserialized_users)
         return deserialized_users
+
     def create_bill(self, new_bill: BillCreate) -> Bill:
         """Takes BillCreate (Bill without ID), and adds to database 
         and returns the Bill object with the ID
@@ -160,7 +167,14 @@ conn = sqlite3.connect("bill.db")
 
 # create cursor
 c = conn.cursor()
-data = c.execute(''' ''')
+data = c.execute('''
+-- CREATE TABLE users (
+-- 	user_id TEXT PRIMARY KEY,
+-- 	username TEXT NOT NULL UNIQUE,
+-- 	password TEXT NOT NULL,
+-- 	email TEXT NOT NULL UNIQUE
+-- )
+''')
 
 conn.commit()
 conn.close()

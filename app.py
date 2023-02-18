@@ -12,6 +12,7 @@ db_api = BillDBAPI()
 # Load templates
 @app.route('/')
 def index():
+    flash("this is a flash test")
     return render_template('index.html')
 
 
@@ -23,7 +24,32 @@ def dashboard():
 def login():
     return render_template('login.html')
 
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
 todays_date = date.today()
+
+
+# Create bill
+@app.post("/api/user")
+def create_user():
+    
+    # get json data
+    json_data = request.get_json()
+
+    # deserialize json to UserCreate object with no ID (not created yet in DB)
+    new_user = deserialize_json(UserCreate, json_data)
+    db_api.create_user(new_user)
+    return {"m":"everything good"}
+
+@app.get("/api/user")
+def get_users():
+    users = db_api.get_all_users()
+    print(f"all users   {users}")
+    deserialized_users= serialize_to_json(users)
+    return deserialized_users, 200
+
 # Create bill
 @app.post("/bill")
 def create_bill():
