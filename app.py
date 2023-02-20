@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, flash
+from flask import Flask, request, render_template
+from werkzeug.security import check_password_hash
 
 from database_api import BillDBAPI
 from data_handler import *
@@ -12,9 +13,7 @@ db_api = BillDBAPI()
 # Load templates
 @app.route('/')
 def index():
-    flash("this is a flash test")
     return render_template('index.html')
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -50,6 +49,17 @@ def get_users():
     deserialized_users= serialize_to_json(users)
     return deserialized_users, 200
 
+@app.delete("/api/user")
+def delete_all_users():
+    pass
+
+@app.post("/api/login")
+def login_user():
+    jdata = request.get_json()
+    print("THIS DA uSER BRUH")
+    user = db_api.get_user_by_username(jdata['username'])
+   
+    return {"aye":str(check_password_hash(user[0][2], jdata['password']))}
 # Create bill
 @app.post("/bill")
 def create_bill():

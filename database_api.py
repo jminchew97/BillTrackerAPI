@@ -21,7 +21,7 @@ class BillDBAPI(BillAPI):
         id = uuid4().hex
         
         # hash password
-        hashed_pass =  generate_password_hash(UserCreate.password,method="sha256")
+        hashed_pass =  generate_password_hash(UserCreate.password)
         c.execute("INSERT INTO Users VALUES (?,?,?,?)", (id, 
         UserCreate.username,
         hashed_pass,
@@ -30,6 +30,7 @@ class BillDBAPI(BillAPI):
         conn.commit()
         conn.close()
     def get_all_users(self) -> list[User]:
+
         # connects to db we name,if table doesn't exist will create it
         conn = sqlite3.connect("bill.db")
 
@@ -49,7 +50,23 @@ class BillDBAPI(BillAPI):
         deserialized_users= deserialize_rows(User, fetched)
         print("DESERIALIZED USERS ", deserialized_users)
         return deserialized_users
+    def get_user_by_username(self, username: str) -> list[tuple[object]]:
+        # connects to db we name,if table doesn't exist will create it
+        conn = sqlite3.connect("bill.db")
 
+        # create cursor
+        c = conn.cursor()
+
+        c.execute("SELECT * FROM users WHERE username = ? ", [username])
+        user_row = c.fetchall()
+
+        conn.commit()
+        conn.close()
+
+        return user_row
+        
+    def delete_all_users(self):
+        pass
     def create_bill(self, new_bill: BillCreate) -> Bill:
         """Takes BillCreate (Bill without ID), and adds to database 
         and returns the Bill object with the ID
@@ -168,12 +185,6 @@ conn = sqlite3.connect("bill.db")
 # create cursor
 c = conn.cursor()
 data = c.execute('''
--- CREATE TABLE users (
--- 	user_id TEXT PRIMARY KEY,
--- 	username TEXT NOT NULL UNIQUE,
--- 	password TEXT NOT NULL,
--- 	email TEXT NOT NULL UNIQUE
--- )
 ''')
 
 conn.commit()
