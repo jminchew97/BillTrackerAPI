@@ -130,8 +130,6 @@ def validate(typ: type[T], current_date: date):
     """validates type (BillCreate, Bill, EditBill
     makes sure that amount is greater than 0, can add more validation later if needed on name, date, etc
     """
-
-
     
     # iterate through typ field with corresponding value
     

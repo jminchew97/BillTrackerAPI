@@ -1,14 +1,35 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from werkzeug.security import check_password_hash
-
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from database_api import BillDBAPI
 from data_handler import *
-
+import uuid
 from datetime import date
 
 app = Flask(__name__)
+app.secret_key = uuid.uuid4().hex
 db_api = BillDBAPI()
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
 
+
+class UserObj(UserMixin):
+    def __init__(self, id,username, password, email):
+        self.id = id,
+        self.username = username
+        self.password = password
+        self.email = email
+        self.authenticated = False    
+        def is_active(self):
+            return self.is_active()    
+        def is_anonymous(self):
+            return False    
+        def is_authenticated(self):
+            return self.authenticated    
+        def is_active(self):
+            return True    
+        def get_id(self):
+            return self.id
 
 # Load templates
 @app.route('/')
@@ -16,8 +37,19 @@ def index():
     return render_template('index.html')
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
     return render_template('dashboard.html')
+
+# User functions
+@login_manager.user_loader
+def load_user(username):
+   user = db_api.get_user_by_username(username)[0]
+   
+   if user is None:
+      return None
+   else:
+      return UserObj(user[0], user[1], user[2], user[3])
 
 @app.route('/login')
 def login():
@@ -55,11 +87,22 @@ def delete_all_users():
 
 @app.post("/api/login")
 def login_user():
+    if current_user.is_authenticated:
+        print("user is authenticated")
+        return redirect(url_for("dashboard"))
+    
+    # user not authenticated, check login info
     jdata = request.get_json()
-    print("THIS DA uSER BRUH")
-    user = db_api.get_user_by_username(jdata['username'])
-   
-    return {"aye":str(check_password_hash(user[0][2], jdata['password']))}
+    #user = db_api.get_user_by_username(jdata['username'])
+    user = load_user(jdata["username"])
+    user_password = user[0][2]
+    entered_password = jdata['password']
+    
+    if check_password_hash(user_password, entered_password):
+        login_user(user)
+    return {"aye":str(check_password_hash(user_password, jdata['password']))}
+    
+
 # Create bill
 @app.post("/bill")
 def create_bill():
@@ -70,7 +113,7 @@ def create_bill():
     new_bill = deserialize_json(BillCreate, json_data)
     
     print(f"current date test: {todays_date}")
-    #validation 
+    #validates that data meets certain specifications
     if validate(new_bill, todays_date) != None:
         
         return validate(new_bill, todays_date), 404
