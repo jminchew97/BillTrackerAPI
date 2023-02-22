@@ -9,27 +9,17 @@ from datetime import date
 app = Flask(__name__)
 app.secret_key = uuid.uuid4().hex
 db_api = BillDBAPI()
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
 
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/api/'
+app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
 
-class UserObj(UserMixin):
-    def __init__(self, id,username, password, email):
-        self.id = id,
-        self.username = username
-        self.password = password
-        self.email = email
-        self.authenticated = False    
-        def is_active(self):
-            return self.is_active()    
-        def is_anonymous(self):
-            return False    
-        def is_authenticated(self):
-            return self.authenticated    
-        def is_active(self):
-            return True    
-        def get_id(self):
-            return self.id
+# Disable CSRF protection for this example. In almost every case,
+# this is a bad idea. See examples/csrf_protection_with_cookies.py
+# for how safely store JWTs in cookies
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+
+# Set the secret key to sign the JWTs with
+app.config['JWT_SECRET_KEY'] = 'iuashd981ehiuhqew9112897'  # Change this!
 
 # Load templates
 @app.route('/')
@@ -41,15 +31,6 @@ def index():
 def dashboard():
     return render_template('dashboard.html')
 
-# User functions
-@login_manager.user_loader
-def load_user(username):
-   user = db_api.get_user_by_username(username)[0]
-   
-   if user is None:
-      return None
-   else:
-      return UserObj(user[0], user[1], user[2], user[3])
 
 @app.route('/login')
 def login():
@@ -72,7 +53,10 @@ def create_user():
     # deserialize json to UserCreate object with no ID (not created yet in DB)
     new_user = deserialize_json(UserCreate, json_data)
     db_api.create_user(new_user)
-    return {"m":"everything good"}
+    
+    # return user just created by getting it from database by username
+    # then deserializing to object, then turn into json
+    return serialize_to_json(deserialize_row(User, db_api.get_user_by_username(new_user.username))), 200
 
 @app.get("/api/user")
 def get_users():
