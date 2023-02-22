@@ -9,7 +9,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 todays_date = date.today()
 class BillDBAPI(BillAPI):
-
     def create_user(self, UserCreate):
         #connects to db we name,if it doesn't exist will create it
         conn = sqlite3.connect("bill.db")
@@ -50,8 +49,11 @@ class BillDBAPI(BillAPI):
         deserialized_users= deserialize_rows(User, fetched)
         print("DESERIALIZED USERS ", deserialized_users)
         return deserialized_users
-    def get_user_by_username(self, username: str) -> list[tuple[object]]:
-        # connects to db we name,if table doesn't exist will create it
+    def get_user_by_username(self, username: str) -> User:
+        """Gets user from database searching by username and returns full user obj"""
+
+        # connects to db we name,if table doesnt exist will create it
+
         conn = sqlite3.connect("bill.db")
 
         # create cursor
@@ -62,9 +64,9 @@ class BillDBAPI(BillAPI):
 
         conn.commit()
         conn.close()
-
-        return user_row
-        
+        user = deserialize_row(User, user_row)
+        return user
+    
     def delete_all_users(self):
         pass
     def create_bill(self, new_bill: BillCreate) -> Bill:
@@ -173,10 +175,6 @@ def get_largest_rowid() -> int:
     else:
         return result[0][0]
 
-
-def _auto_increment_db() -> int:
-    incremented = get_largest_rowid() + 1
-    return incremented
 
 
 # connects to db we name,if table doesn't exist will create it

@@ -22,6 +22,7 @@ class UserCreate:
 class User:
     """A finished user object including all fields, extracting from db"""
     id: str
+    """Hashed password as str"""
     username: str
     password: str
     email:str
