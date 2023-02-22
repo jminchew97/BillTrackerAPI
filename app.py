@@ -41,7 +41,6 @@ def dashboard():
 
 @app.route('/login')
 def login():
-    authenticate_user(json)
     return render_template('login.html')
 
 @app.route('/signup')
@@ -171,7 +170,9 @@ def update_bill(id):
 
 
 def authenticate_user(data: dict) -> bool:
-    '''Return true of false on whether or not user creds are valid'''
+    '''Return true of false on whether or not user creds are valid
+    Gets user creds from db and compares to log in creds fetched from front end
+    '''
     print(data)
     uname = data['username'] 
     pword = data['password']

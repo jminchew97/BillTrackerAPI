@@ -9,6 +9,7 @@ document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
       <a class="nav-item nav-link" href="http://127.0.0.1:5000/dashboard">Dashboard</a>\
       <a class="nav-item nav-link" href="http://127.0.0.1:5000/login">Login</a>\
       <a class="nav-item nav-link" href="http://127.0.0.1:5000/signup">Signup</a>\
+      <a class="nav-item nav-link" href="http://127.0.0.1:5000/logout_with_cookies">Logout</a>\
     </div>\
   </div>\
 </nav>\
