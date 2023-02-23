@@ -34,7 +34,7 @@ class Bill:
     name: str
     amount: Decimal
     due_date: date
-    
+    user_id:str
 
 @dataclass_json
 @dataclass
@@ -43,14 +43,13 @@ class BillCreate:
     amount: Decimal
     due_date:date
 
-
 @dataclass_json
 @dataclass
 class BillEdit:
     name: Optional[str] = None
     amount: Optional[Decimal] = None
     due_date: Optional[date] = None
-
+    user_id: Optional[str] = None # TODO must find a way to make sure user_id is required
 
 T = TypeVar('T')
 

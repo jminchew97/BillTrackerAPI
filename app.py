@@ -9,7 +9,7 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import set_access_cookies
-from flask_jwt_extended import unset_jwt_cookies
+from flask_jwt_extended import unset_jwt_cookies, get_jwt_identity
 
 app = Flask(__name__)
 app.secret_key = "01d2acfd81084d598c66178ce738dbf3"
@@ -80,10 +80,14 @@ def delete_all_users():
 @app.route("/login_with_cookies", methods=["POST"])
 def login_with_cookies():
     response = jsonify({"msg": "login successful"})
-    if authenticate_user(request.get_json()):
-
-        access_token = create_access_token(identity="example_user")
+    data = request.get_json()
+    print("has reached login function")
+    if authenticate_user(data):
+        user = db_api.get_user_by_username(data["username"])
+        access_token = create_access_token(identity=user.id)
+        
         set_access_cookies(response, access_token)
+        
         return response
     return {"msg":"login failed"}
 
@@ -97,36 +101,48 @@ def logout_with_cookies():
 @app.route("/protected", methods=["GET", "POST"])
 @jwt_required()
 def protected():
-    return jsonify(foo="bar")
+
+    return jsonify(foo="bar", id=get_jwt_identity())
 
 
 
 # Create bill
-@app.post("/bill")
+@app.route("/bill", methods=["POST"])
+#@app.post("/bill")
+@jwt_required()
 def create_bill():
+    
     # get json data
     json_data = request.get_json()
 
-    # deserialize json to Bill object with no ID (not created yet in DB)
+    # deserialize json to Bill object with no ID or user ID (not created yet in DB)
     new_bill = deserialize_json(BillCreate, json_data)
     
-    print(f"current date test: {todays_date}")
+    # get user by id
+
+    user = db_api.get_user_by_id(get_jwt_identity())
+
+    #TODO add user_id value to bill here
+    new_bill.user_id = user.id
+    
     #validates that data meets certain specifications
     if validate(new_bill, todays_date) != None:
         
         return validate(new_bill, todays_date), 404
     
     # Return created bill from DB to verify completion
-    return serialize_to_json(db_api.create_bill(new_bill)), 200
+    return serialize_to_json(db_api.create_bill(new_bill, get_jwt_identity())), 200
 
 
 # Get all bills
 @app.get("/bill")
+@jwt_required()
 def get_all_bills():
+    
     # TODO replace with API all_bills = database.show_all()
-
-    sorted_bills = sort_bills_by_date(db_api.get_all_bills())
-
+    print(db_api.get_all_bills(get_jwt_identity()))
+    sorted_bills = sort_bills_by_date(db_api.get_all_bills(get_jwt_identity()))
+    
     deserialized_bills = serialize_to_json(sorted_bills)
 
     return deserialized_bills, 200
@@ -134,6 +150,7 @@ def get_all_bills():
 
 # Get specific bill ID
 @app.get("/bill/<string:id>")
+@jwt_required()
 def get_bill_by_id(id: str):
     bill = deserialize_row(Bill, db_api.get_bill_by_id(id), todays_date)
 
@@ -141,14 +158,16 @@ def get_bill_by_id(id: str):
 
 
 # Delete specific bill by ID
+@jwt_required()
 @app.delete("/bill/<string:id>")
 def delete_bill_by_id(id):
 
     return db_api.delete_bill_by_id(id)
 
 
-# TODO create edit bill function
+
 @app.put("/bill/<string:id>")
+@jwt_required()
 def update_bill(id):
 
     # TODO edit bill
@@ -185,3 +204,4 @@ def authenticate_user(data: dict) -> bool:
     else:
         print("login passed in auth function")
         return check_password_hash(user.password, pword)
+

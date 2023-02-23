@@ -66,10 +66,26 @@ class BillDBAPI(BillAPI):
         conn.close()
         user = deserialize_row(User, user_row)
         return user
-    
+    def get_user_by_id(self, id: str) -> User:
+        """Gets user from database searching by id and returns full user obj"""
+
+        # connects to db we name,if table doesnt exist will create it
+
+        conn = sqlite3.connect("bill.db")
+
+        # create cursor
+        c = conn.cursor()
+
+        c.execute("SELECT * FROM users WHERE user_id = ? ", [id])
+        user_row = c.fetchall()
+
+        conn.commit()
+        conn.close()
+        user = deserialize_row(User, user_row)
+        return user
     def delete_all_users(self):
         pass
-    def create_bill(self, new_bill: BillCreate) -> Bill:
+    def create_bill(self, new_bill: BillCreate, user_id:str) -> Bill:
         """Takes BillCreate (Bill without ID), and adds to database 
         and returns the Bill object with the ID
         """
@@ -82,9 +98,9 @@ class BillDBAPI(BillAPI):
         # generate UUID
         id = uuid4().hex
         
-        c.execute("INSERT INTO bills VALUES (?,?,?,?)", (id, new_bill.name,
+        c.execute("INSERT INTO bills VALUES (?,?,?,?,?)", (id, new_bill.name,
                                                             dollars_to_cents(new_bill.amount),
-                                                            new_bill.due_date))
+                                                            new_bill.due_date, user_id))
 
         conn.commit()
         conn.close()
@@ -95,7 +111,7 @@ class BillDBAPI(BillAPI):
         return deserialize_row(Bill, self.get_bill_by_id(id),todays_date)
 
     # Query the DB return all records
-    def get_all_bills(self) -> list[Bill]:
+    def get_all_bills(self, user_id:str) -> list[Bill]:
         # connects to db we name,if table doesn't exist will create it
         conn = sqlite3.connect("bill.db")
 
@@ -103,7 +119,7 @@ class BillDBAPI(BillAPI):
         c = conn.cursor()
 
         # Query the whole DB
-        c.execute("SELECT * FROM bills")
+        c.execute("SELECT * FROM bills WHERE user_id=?", [user_id])
         fetched = c.fetchall()
 
         # Commit our command
@@ -182,8 +198,10 @@ conn = sqlite3.connect("bill.db")
 
 # create cursor
 c = conn.cursor()
-data = c.execute('''
+data = c.execute('''select * from bills
 ''')
-
+names = list(map(lambda x: x[0], c.description))
 conn.commit()
 conn.close()
+print(names)
+
