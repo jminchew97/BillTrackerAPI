@@ -47,7 +47,7 @@ let isInEditMode = false;
       document.getElementById("table-rows").innerHTML +=
               `<tr id="${i}" data-bill-uuid="${bill.id}"><th scope="row"><text>${i}</text></th>` +
               `<td ><text id="name${i}" class="editField${i}"> ${bill.name} </text> </td>` +
-              `<td ><text id="amount${i}" class="editField${i}">${bill.amount}</text> </td>` +
+              `<td ><text id="amount${i}" class="editField${i}">$${bill.amount}</text> </td>` +
               `<td> ${days_left}</td>` +
               `<td ><text id="due_date${i}" class="editField${i}">${bill.due_date}</text></td>` +
               `<td><button id="editBtn${i}" data-row-id="${i}" onclick="clickedEditButton(this)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
@@ -250,7 +250,10 @@ let isInEditMode = false;
     
     const requestOptions = {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCookie('csrf_access_token')
+    },
+
       body:JSON.stringify(jdata)
     };
     fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
@@ -303,7 +306,10 @@ let isInEditMode = false;
     }
 
     const requestOptions = {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCookie('csrf_access_token')
+    }
     };
     fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
             .then(response => response.json())
