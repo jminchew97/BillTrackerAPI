@@ -45,9 +45,7 @@ class BillDBAPI(BillAPI):
 
         # Close our connection
         conn.close()
-        print("before deserialized", fetched)
         deserialized_users= deserialize_rows(User, fetched)
-        print("DESERIALIZED USERS ", deserialized_users)
         return deserialized_users
     def get_user_by_username(self, username: str) -> User:
         """Gets user from database searching by username and returns full user obj"""
@@ -127,7 +125,6 @@ class BillDBAPI(BillAPI):
 
         # Close our connection
         conn.close()
-        print("inside db get all funciton, before deserialization", fetched)
         deserialized_bills = deserialize_rows(Bill, fetched)
         return deserialized_bills
 
@@ -198,10 +195,8 @@ conn = sqlite3.connect("bill.db")
 
 # create cursor
 c = conn.cursor()
-data = c.execute('''select * from bills
+data = c.execute('''
 ''')
-names = list(map(lambda x: x[0], c.description))
 conn.commit()
 conn.close()
-print(names)
 

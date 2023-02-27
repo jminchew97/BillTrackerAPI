@@ -57,18 +57,33 @@ def create_user():
     # get json data
     json_data = request.get_json()
 
+    # check if signup username exists in database
+    users = db_api.get_all_users()
+    
+    for user in users:
+        if user.username == json_data["username"]:
+            return {"msg":f"Username already exists in database."}, 400
+        elif user.email == json_data["email"]:
+            return {"msg":f"Email already exists in database."}, 400
+    # check if password matches repeated password check
+    if json_data["password"] != json_data["repeatPassword"]:
+        return {"msg":"Passwords do not match"}, 400
+    
+    # delete repeat password from payload
+    del json_data["repeatPassword"]
+
     # deserialize json to UserCreate object with no ID (not created yet in DB)
     new_user = deserialize_json(UserCreate, json_data)
     db_api.create_user(new_user)
     
     # return user just created by getting it from database by username
     # then deserializing to object, then turn into json
-    return serialize_to_json(deserialize_row(User, db_api.get_user_by_username(new_user.username))), 200
+    return {"msg":"signup successful"}, 200
 
 @app.get("/api/user")
 def get_users():
     users = db_api.get_all_users()
-    print(f"all users   {users}")
+
     deserialized_users= serialize_to_json(users)
     return deserialized_users, 200
 
@@ -81,7 +96,7 @@ def delete_all_users():
 def login_with_cookies():
     response = jsonify({"msg": "login successful"})
     data = request.get_json()
-    print("has reached login function")
+
     if authenticate_user(data):
         user = db_api.get_user_by_username(data["username"])
         access_token = create_access_token(identity=user.id)
@@ -140,7 +155,7 @@ def create_bill():
 def get_all_bills():
     
     # TODO replace with API all_bills = database.show_all()
-    print(db_api.get_all_bills(get_jwt_identity()))
+
     sorted_bills = sort_bills_by_date(db_api.get_all_bills(get_jwt_identity()))
     
     deserialized_bills = serialize_to_json(sorted_bills)
@@ -192,16 +207,16 @@ def authenticate_user(data: dict) -> bool:
     '''Return true of false on whether or not user creds are valid
     Gets user creds from db and compares to log in creds fetched from front end
     '''
-    print(data)
+
     uname = data['username'] 
     pword = data['password']
 
     user = db_api.get_user_by_username(uname)
     
     if isinstance(user,Exception):
-        print("login failed in auth function")
+
         return False
     else:
-        print("login passed in auth function")
+
         return check_password_hash(user.password, pword)
 
