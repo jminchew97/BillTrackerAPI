@@ -190,12 +190,21 @@ def get_largest_rowid() -> int:
 
 
 
-# connects to db we name,if table doesn't exist will create it
+#check if tables are created, if not create them
+#users table
 conn = sqlite3.connect("bill.db")
-
-# create cursor
 c = conn.cursor()
 data = c.execute('''
+CREATE TABLE IF NOT EXISTS users (user_id text, username text, password text, email text)
+''')
+conn.commit()
+conn.close()
+conn = sqlite3.connect("bill.db")
+
+
+c = conn.cursor()
+data = c.execute('''
+CREATE TABLE IF NOT EXISTS bills (id text, name text, amount INTEGER, due_date text, user_id text)
 ''')
 conn.commit()
 conn.close()
