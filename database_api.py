@@ -195,7 +195,7 @@ def get_largest_rowid() -> int:
 conn = sqlite3.connect("bill.db")
 c = conn.cursor()
 data = c.execute('''
-CREATE TABLE IF NOT EXISTS users (user_id text, username text, password text, email text)
+CREATE TABLE IF NOT EXISTS Users (user_id text, username text, password text, email text)
 ''')
 conn.commit()
 conn.close()
