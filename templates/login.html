@@ -94,7 +94,7 @@ function postLoginCredentials(event){
     event.preventDefault();
     let jdata = createJsonFromFormData();
     console.log("postLoginCreds function is running")
-    fetch('http://127.0.0.1:5000/login_with_cookies', {
+    fetch('https://billy-web-app.onrender.com/login_with_cookies', {
         method: 'POST',
         headers: {
             accept: 'application.json',

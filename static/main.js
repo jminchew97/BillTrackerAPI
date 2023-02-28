@@ -1,4 +1,4 @@
-let url = "http://127.0.0.1:5000"
+let url = "https://billy-web-app.onrender.com"
 
 function getCookie(cname) {
   let name = cname + "=";

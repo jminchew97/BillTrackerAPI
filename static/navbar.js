@@ -5,7 +5,7 @@ document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
   </button>\
   <div class="collapse navbar-collapse" id="navbarNavAltMarkup">\
     <div class="navbar-nav">\
-      <a class="nav-item nav-link" href="http://127.0.0.1:5000/">Home <span class="sr-only">(current)</span></a>\
+      <a class="nav-item nav-link" href="https://billy-web-app.onrender.com/">Home <span class="sr-only">(current)</span></a>\
       <a class="nav-item nav-link" id="dashboardButton-nav" href="/dashboard">Dashboard</a>\
       <a class="nav-item nav-link" id="loginButton-nav" href="/login">Login</a>\
       <a class="nav-item nav-link" id="signupButton-nav" href="/signup">Signup</a>\
@@ -53,7 +53,7 @@ document.getElementById("logoutButton-nav").addEventListener("click",logUserOut,
   function logUserOut(event){
     event.preventDefault();
 
-    fetch('http://127.0.0.1:5000/logout_with_cookies', {
+    fetch('https://billy-web-app.onrender.com/logout_with_cookies', {
         method: 'POST',
         headers: {
             accept: 'application.json',
