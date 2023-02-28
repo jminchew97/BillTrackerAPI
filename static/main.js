@@ -1,3 +1,5 @@
+let url = "http://127.0.0.1:5000"
+
 function getCookie(cname) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
@@ -30,7 +32,7 @@ let isInEditMode = false;
   async function main()
   {
 
-    jdata = await getJson("http://127.0.0.1:5000/bill");
+    jdata = await getJson(url + "/bill");
     // fill out each column and row
     for (let i = 0; i < jdata.length; i++)
     {
@@ -85,7 +87,7 @@ let isInEditMode = false;
     {
       return alert("Must cancel edit before you can do any other action.");
     }
-    fetch('http://127.0.0.1:5000/bill', {
+    fetch(url + '/bill', {
         method: 'POST',
         headers: {
             accept: 'application.json',
@@ -256,7 +258,7 @@ let isInEditMode = false;
 
       body:JSON.stringify(jdata)
     };
-    fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
+    fetch(url + '/bill/' + getBillUUID(rowId), requestOptions)
             .then(response => {
               if (response.ok) {
                 response.json().then(() => {window.location.reload()} )
@@ -311,7 +313,7 @@ let isInEditMode = false;
       'X-CSRF-TOKEN': getCookie('csrf_access_token')
     }
     };
-    fetch('http://127.0.0.1:5000/bill/' + getBillUUID(rowId), requestOptions)
+    fetch(url +'/bill/' + getBillUUID(rowId), requestOptions)
             .then(response => response.json())
             .then(data => console.log("deleted")).then(() => {window.location.reload()});
 

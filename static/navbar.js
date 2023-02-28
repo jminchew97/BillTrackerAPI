@@ -6,10 +6,10 @@ document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
   <div class="collapse navbar-collapse" id="navbarNavAltMarkup">\
     <div class="navbar-nav">\
       <a class="nav-item nav-link" href="http://127.0.0.1:5000/">Home <span class="sr-only">(current)</span></a>\
-      <a class="nav-item nav-link" id="dashboardButton-nav" href="http://127.0.0.1:5000/dashboard">Dashboard</a>\
-      <a class="nav-item nav-link" id="loginButton-nav" href="http://127.0.0.1:5000/login">Login</a>\
-      <a class="nav-item nav-link" id="signupButton-nav" href="http://127.0.0.1:5000/signup">Signup</a>\
-      <a class="nav-item nav-link" id="logoutButton-nav" href="http://127.0.0.1:5000/">Logout</a>\
+      <a class="nav-item nav-link" id="dashboardButton-nav" href="/dashboard">Dashboard</a>\
+      <a class="nav-item nav-link" id="loginButton-nav" href="/login">Login</a>\
+      <a class="nav-item nav-link" id="signupButton-nav" href="/signup">Signup</a>\
+      <a class="nav-item nav-link" id="logoutButton-nav" href="/index">Logout</a>\
     </div>\
   </div>\
 </nav>\
@@ -65,7 +65,7 @@ document.getElementById("logoutButton-nav").addEventListener("click",logUserOut,
     {
       if (resp.ok)
       {
-        return resp.json().then(jdata=> console.log(jdata)).then(() => {window.location.assign('http://127.0.0.1:5000/login')})
+        return resp.json().then(jdata=> console.log(jdata)).then(() => {window.location.assign('/login')})
       }
       else 
       {
