@@ -1,9 +1,9 @@
 // requires a div with id="dismiss-container"
 function dismissableError(errorMessage)
 {
-    document.getElementById("dismiss-container").innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">\
+    document.getElementById("dismiss-container").innerHTML = `<div div class="alert alert-warning alert-dismissible" role="alert">\
     ${errorMessage}\
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">x</button>\
 </div>\
 `;
 
