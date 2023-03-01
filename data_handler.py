@@ -1,4 +1,4 @@
-import dataclasses
+
 from typing import TypeVar, Optional
 from dataclasses import dataclass, fields, replace
 from dataclasses_json import dataclass_json
@@ -6,7 +6,7 @@ from decimal import Decimal
 from uuid import uuid4
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
-import orjson
+import orjson, re, dataclasses
 import json as json_module
 
 
@@ -126,7 +126,7 @@ def serialize_to_json(typ: type[T]) -> dict:
 def cents_to_dollars(cents_amount: int) -> Decimal:
     dollars = round(Decimal(cents_amount / 100), 2)
     return Decimal(dollars)
-def validate(typ: type[T], current_date: date):
+def validate(typ: type[T], current_date: date) :
     """validates type (BillCreate, Bill, EditBill
     makes sure that amount is greater than 0, can add more validation later if needed on name, date, etc
     """
@@ -139,8 +139,17 @@ def validate(typ: type[T], current_date: date):
         if getattr(typ, field.name) != None:
                 
             if field.name == "amount":
-                
-                if Decimal(getattr(typ, field.name)) <= 0 :
+                amount = getattr(typ, field.name)
+
+                for char in amount:
+                    # char is not a period and is not a digit, must be invalid character
+                    if char != "." and str.isdigit(char) == False:
+                        return {"message":f"Entered invalid character '{char}'"}
+
+                    
+                if amount == "" or getattr(typ, field.name) == None:
+                    return {"message":"You must enter an amount"}
+                if Decimal(amount) <= 0:
                     return {"message":"Number must be greater than 0"}
             elif field.name == "due_date":
                 date= getattr(typ, field.name)

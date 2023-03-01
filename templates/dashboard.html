@@ -214,6 +214,7 @@ let isInEditMode = false;
 
 
   }
+
   function createInputElementsFromTextElements(fields, rowId)
   {
     let inputElements = [];
@@ -271,31 +272,38 @@ let isInEditMode = false;
     let inputElements = row.getElementsByClassName("editField"+ rowId);
     
 
-
+    // BUILD JSON PAYLOAD
     for(let i =0; i< inputElements.length; i++)
     {
       let currentElement = inputElements[i];
 
-      // remove UID from the element id i.e name0 -> name
+      // remove UID from the element id i.e name4 -> name
       let key = currentElement.getAttribute("id").replace(/[0-9]/g, '');
       let defaultValue = currentElement.getAttribute("placeholder");
       let value = currentElement.value;
-      console.log(value)
+      
+      // if value is empty then fill json payload with default value
       if (value == "")
       {
+
         
         jdata[key] = defaultValue;
 
       }
       else
       {
-        console.log("EVERYTHING IS FINE")
+        
         jdata[key] = value;
       }
       
 
     }
     
+    
+    // remove $ from amount string
+    jdata["amount"] = jdata["amount"].replace('$', '');
+
+    // submit PUT request to edit bill
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json',
