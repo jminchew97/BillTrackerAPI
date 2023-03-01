@@ -1,15 +1,15 @@
-from flask import Flask, request, render_template, redirect, url_for, make_response, jsonify
+from flask import Flask, request, render_template, redirect, make_response, jsonify, url_for
 from werkzeug.security import check_password_hash
 from database_api import BillDBAPI
 from data_handler import *
 import uuid
-from datetime import date
+from datetime import date, timedelta, timezone
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import set_access_cookies
-from flask_jwt_extended import unset_jwt_cookies, get_jwt_identity
+from flask_jwt_extended import unset_jwt_cookies, get_jwt_identity, get_jwt
 
 app = Flask(__name__)
 app.secret_key = "01d2acfd81084d598c66178ce738dbf3"
@@ -26,16 +26,19 @@ app.config["JWT_COOKIE_SECURE"] = False
 # Set the secret key to sign the JWTs with
 app.config['JWT_SECRET_KEY'] = 'iuashd981ehiuhqew9112897'  # Change this from 'secret'
 
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
 jwt = JWTManager(app)
 # Load templates
 @app.route('/')
 def index():
+    
     return render_template('index.html')
 
 @app.route('/dashboard')
-@jwt_required()
+@jwt_required(optional=False)
 def dashboard():
+
     return render_template('dashboard.html')
 
 
@@ -49,8 +52,20 @@ def signup():
 
 todays_date = date.today()
 
+# if user tries to access a page without JWT in cookies, then redirect them to 
+@jwt.unauthorized_loader
+def custom_unauthorized_response(_err):
+    return redirect(url_for('login'))
+
+# if token is expired then log out user by deleting JWT cookies
+@jwt.expired_token_loader
+def my_expired_token_callback(jwt_header, jwt_payload):
+    response = make_response(redirect(url_for("login")))
+    unset_jwt_cookies(response)
+    return response, 302
 
 # Create bill
+
 @app.post("/api/user")
 def create_user():
     
@@ -80,6 +95,7 @@ def create_user():
     # then deserializing to object, then turn into json
     return {"msg":"signup successful"}, 200
 
+
 @app.get("/api/user")
 def get_users():
     users = db_api.get_all_users()
@@ -90,7 +106,6 @@ def get_users():
 @app.delete("/api/user")
 def delete_all_users():
     pass
-
 
 @app.route("/login_with_cookies", methods=["POST"])
 def login_with_cookies():
@@ -112,17 +127,35 @@ def logout_with_cookies():
     unset_jwt_cookies(response)
     return response
 
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        print("expire timestamp", exp_timestamp)
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
 
+        if target_timestamp > exp_timestamp:
+            print("made it inside function")
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        print("returned og response")
+        
+        return response
+      
+    
 @app.route("/protected", methods=["GET", "POST"])
 @jwt_required()
 def protected():
 
     return jsonify(foo="bar", id=get_jwt_identity())
 
-
-
 # Create bill
-@app.route("/bill", methods=["POST"])
+@app.post("/bill")
 #@app.post("/bill")
 @jwt_required()
 def create_bill():
@@ -147,7 +180,6 @@ def create_bill():
     
     # Return created bill from DB to verify completion
     return serialize_to_json(db_api.create_bill(new_bill, get_jwt_identity())), 200
-
 
 # Get all bills
 @app.get("/bill")
@@ -179,8 +211,6 @@ def delete_bill_by_id(id):
 
     return db_api.delete_bill_by_id(id)
 
-
-
 @app.put("/bill/<string:id>")
 @jwt_required()
 def update_bill(id):
@@ -201,7 +231,6 @@ def update_bill(id):
     
     # update the bill and return the new bill from DB
     return serialize_to_json(db_api.update_bill(id, edited_bill))
-
 
 def authenticate_user(data: dict) -> bool:
     '''Return true of false on whether or not user creds are valid

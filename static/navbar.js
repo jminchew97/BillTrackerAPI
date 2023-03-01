@@ -1,3 +1,5 @@
+let projectUrll = "http://127.0.0.1:5000";
+
 document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
   <a class="navbar-brand" href="#">Billy</a>\
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">\
@@ -5,7 +7,6 @@ document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
   </button>\
   <div class="collapse navbar-collapse" id="navbarNavAltMarkup">\
     <div class="navbar-nav">\
-      <a class="nav-item nav-link" href="https://billy-web-app.onrender.com/">Home <span class="sr-only">(current)</span></a>\
       <a class="nav-item nav-link" id="dashboardButton-nav" href="/dashboard">Dashboard</a>\
       <a class="nav-item nav-link" id="loginButton-nav" href="/login">Login</a>\
       <a class="nav-item nav-link" id="signupButton-nav" href="/signup">Signup</a>\
@@ -14,7 +15,6 @@ document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
   </div>\
 </nav>\
 ');
-
 
 //write code to manage buttons if logged in or logged out
 function getCookie(cname) {
@@ -53,7 +53,7 @@ document.getElementById("logoutButton-nav").addEventListener("click",logUserOut,
   function logUserOut(event){
     event.preventDefault();
 
-    fetch('https://billy-web-app.onrender.com/logout_with_cookies', {
+    fetch(projectUrll +'/logout_with_cookies', {
         method: 'POST',
         headers: {
             accept: 'application.json',

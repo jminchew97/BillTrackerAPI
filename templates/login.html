@@ -9,11 +9,16 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-  <title>Hello, world!</title>
+  <title>Billy login</title>
 </head>
 <body>
+
 <!-- load navbar -->
 <script src="../static/navbar.js"></script>
+
+<!-- load url variable -->
+<script type="text/javascript"src="../static/url.js"></script>
+
 <div class="jumbotron text-center">
   <h1>Log in</h1>
 </div>
@@ -59,8 +64,8 @@
       
         <!-- Register buttons -->
         <div class="text-center">
-          <p>Not a member? <a href="#!">Register</a></p>
-          <p>or sign up with:</p>
+          <p>Not a user? <a href="/signup">Register</a></p>
+
           <button type="button" class="btn btn-link btn-floating mx-1">
             <i class="fab fa-facebook-f"></i>
           </button>
@@ -82,6 +87,7 @@
       
 </div>
 <script>
+  
   document.getElementById("loginButton").addEventListener("click",postLoginCredentials, false);
 function createJsonFromFormData()
 {
@@ -94,7 +100,7 @@ function postLoginCredentials(event){
     event.preventDefault();
     let jdata = createJsonFromFormData();
     console.log("postLoginCreds function is running")
-    fetch('https://billy-web-app.onrender.com/login_with_cookies', {
+    fetch(projectUrl + '/login_with_cookies', {
         method: 'POST',
         headers: {
             accept: 'application.json',
