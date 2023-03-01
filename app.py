@@ -233,6 +233,7 @@ def update_bill(id):
     
     validated = validate(edited_bill, todays_date)
     if  validated != None:
+        print("reaching inside validate funct")
         return validated, 404
     
     # update the bill and return the new bill from DB

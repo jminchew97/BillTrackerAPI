@@ -132,25 +132,28 @@ def validate(typ: type[T], current_date: date) :
     """
     
     # iterate through typ field with corresponding value
-    
+    print(typ, "<=====================")
     for field in fields(typ):
         
         # converts to decimal while also converting from_cents_to_dollars, only if this is an "amount" of money
         if getattr(typ, field.name) != None:
-                
+            
             if field.name == "amount":
                 amount = getattr(typ, field.name)
-
+                
                 for char in amount:
+
                     # char is not a period and is not a digit, must be invalid character
                     if char != "." and str.isdigit(char) == False:
+                        print("cahr error in amount", amount)
                         return {"message":f"Entered invalid character '{char}'"}
-
                     
                 if amount == "" or getattr(typ, field.name) == None:
-                    return {"message":"You must enter an amount"}
+                    return {"message":"You must enter a valid amount. Only numbers or a decimal. ex => 123384.28, 1235343"}
+                
                 if Decimal(amount) <= 0:
                     return {"message":"Number must be greater than 0"}
+                
             elif field.name == "due_date":
                 date= getattr(typ, field.name)
 
@@ -158,7 +161,7 @@ def validate(typ: type[T], current_date: date) :
                     date = str_to_date_obj(date, current_date)
                 
                 if date.day > 28:
-                    return {"message":"You must have a reccuring date below 28th"}
+                    return {"message":"You must have a reccuring date below 29th"}
     return None
 
 def deserialize_json(typ: type[T], jdata: dict, current_date:date = date.today()) -> T:

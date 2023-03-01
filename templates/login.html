@@ -18,17 +18,15 @@
 
 <!-- load url variable -->
 <script type="text/javascript"src="../static/url.js"></script>
-
+<script src="../static/dismissable-error.js"></script>
+<script src="../static/dismissable-error.js"></script>
 <div class="jumbotron text-center">
   <h1>Log in</h1>
 </div>
 <div class="container">
     <form>
-      <div class="alert alert-danger alert-dismissible fade show" id="loginAlert" style="display:none;"role="alert">
-        Log in <strong>failed</strong>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+      <div id="dismiss-container">
+
       </div>
         <!-- username input -->
         
@@ -117,7 +115,7 @@ function postLoginCredentials(event){
         return resp.json().then(jdata=>{
           if (jdata["msg"] != "login successful")
           {
-           document.getElementById("loginAlert").style.display = "block";
+           dismissableError(jdata["msg"]);
           }
           else 
           {
