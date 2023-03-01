@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash
 from database_api import BillDBAPI
 from data_handler import *
 import uuid
+from pyisemail import is_email
 from datetime import date, timedelta, timezone
 
 from flask_jwt_extended import create_access_token
@@ -74,6 +75,11 @@ def create_user():
 
     # check if signup username exists in database
     users = db_api.get_all_users()
+
+
+    # checks if email is valid if not return error
+    if not is_email(address=json_data["email"]):
+        return {"msg":"Email is invalid"}, 400
     
     for user in users:
         if user.username == json_data["username"]:

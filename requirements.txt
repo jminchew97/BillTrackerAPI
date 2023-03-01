@@ -9,6 +9,7 @@ dataclasses==0.6
 dataclasses-json==0.5.7
 dataclasses-serialization==1.3.1
 decorator==5.1.1
+dnspython==2.3.0
 docopt==0.6.2
 exceptiongroup==1.1.0
 executing==1.2.0
@@ -42,6 +43,7 @@ prompt-toolkit==3.0.36
 ptyprocess==0.7.0
 pure-eval==0.2.2
 Pygments==2.14.0
+pyIsEmail==2.0.1
 PyJWT==2.6.0
 pytest==7.2.1
 python-dateutil==2.8.2

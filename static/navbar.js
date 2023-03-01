@@ -1,4 +1,4 @@
-let projectUrll = "http://127.0.0.1:5000";
+let projectUrll = window.location.origin;
 
 document.write('<nav class="navbar navbar-expand-lg navbar-dark bg-dark">\
   <a class="navbar-brand" href="#">Billy</a>\
