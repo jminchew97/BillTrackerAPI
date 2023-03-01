@@ -16,7 +16,7 @@
 <!-- load navbar -->
 <script src="../static/navbar.js"></script>
 <script src="../static/url.js"></script> 
-
+<script src="../static/dismissable-error.js"></script> 
 <div id="dismiss-container">
 
 </div>
@@ -212,6 +212,7 @@ let isInEditMode = false;
     // add listeners
     saveEdit.addEventListener("click", serializeFormJson, false);
     deleteButton.addEventListener("click", deleteBill, false);
+    cancelButton.setAttribute("onclick","window.location.reload()");
     // replace edit button with other buttons
     editBtn.replaceWith(saveEdit,deleteButton,cancelButton);
 
@@ -324,7 +325,7 @@ let isInEditMode = false;
               else 
               {
                 return response.json().then((jdata)=> {
-          alert(jdata["message"]);
+          dismissableError(jdata["message"]);
         });
               }
             })
