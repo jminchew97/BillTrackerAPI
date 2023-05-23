@@ -73,17 +73,19 @@
       async function main() {
         jdata = await getJson(projectUrl + '/bill')
         // fill out each column and row
+        let totalBillAmount = 0
         for (let i = 0; i < jdata.length; i++) {
           let bill = jdata[i]
 
+          //Add bill amount to total
+          totalBillAmount += parseFloat(bill.amount)
+          
           // calculate date differences
           const oneDay = 24 * 60 * 60 * 1000
           let todays_date = new Date()
           let due_date = Date.parse(bill['due_date'])
 
-          var days_left = Math.ceil(
-            Math.abs((due_date - todays_date) / oneDay)
-          )
+          var days_left = Math.ceil(Math.abs((due_date - todays_date) / oneDay))
 
           document.getElementById('table-rows').innerHTML +=
             `<tr id="${i}" data-bill-uuid="${bill.id}"><th scope="row"><text>${i}</text></th>` +
@@ -93,16 +95,26 @@
             `<td ><text id="due_date${i}" class="editField${i}">${bill.due_date}</text></td>` +
             `<td><button id="editBtn${i}" data-row-id="${i}" onclick="clickedEditButton(this)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
         }
-
-        // add "create" row at bottom of all rows
+        
+        console.log("total bill amount is: " + totalBillAmount)
+        
+        // Create Bill row
         document.getElementById('table-rows').innerHTML +=
-          `<tr id="create-row" ><th scope="row"><text>new</text></th>` +
+          `<tr id="create-row" ><th scope="row"><text>Create Bill</text></th>` +
           `<td ><input id="create-name" placeholder="bill name" ></input> </td>` +
           `<td ><input id="create-amount" placeholder="amount" ></input> </td>` +
-          `<td> Calculate days left here</td>` +
+          `<td> Calculated After Creation</td>` +
           `<td ><input id="create-date" type="date" placeholder="day due" ></input></td>` +
           `<td><button id="create-button" type="button" class="btn btn-outline-success"> create</button></td></tr>`
-
+          
+          // Total bill amount row
+          document.getElementById('table-rows').innerHTML +=
+          `<tr id="create-row" ><th scope="row"></th>` +
+          `<td > </td>` +
+          `<td ><text id="totalBillAmount"  ><b>TOTAL:</b> $${totalBillAmount}</text> </td>` +
+          `<td > </td>` +
+          `<td > </td>` 
+        // add "create" row at bottom of all rows
         document
           .getElementById('create-button')
           .addEventListener('click', postBillToAPI, false)
@@ -313,7 +325,7 @@
       function getBillUUID(rowId) {
         return document.getElementById(rowId).getAttribute('data-bill-uuid')
       }
-      
+
       function setAttributes(element, attributes) {
         for (var key in attributes) {
           element.setAttribute(key, attributes[key])
