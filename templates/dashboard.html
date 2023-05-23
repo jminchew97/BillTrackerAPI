@@ -81,7 +81,7 @@
           let todays_date = new Date()
           let due_date = Date.parse(bill['due_date'])
 
-          var days_left = Math.round(
+          var days_left = Math.ceil(
             Math.abs((due_date - todays_date) / oneDay)
           )
 
