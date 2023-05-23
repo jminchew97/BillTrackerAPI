@@ -79,7 +79,7 @@
 
           //Add bill amount to total
           totalBillAmount += parseFloat(bill.amount)
-          
+
           // calculate date differences
           const oneDay = 24 * 60 * 60 * 1000
           let todays_date = new Date()
@@ -95,9 +95,7 @@
             `<td ><text id="due_date${i}" class="editField${i}">${bill.due_date}</text></td>` +
             `<td><button id="editBtn${i}" data-row-id="${i}" onclick="clickedEditButton(this)" type="button" class="btn btn-outline-secondary"> <i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></td></tr>`
         }
-        
-        console.log("total bill amount is: " + totalBillAmount)
-        
+
         // Create Bill row
         document.getElementById('table-rows').innerHTML +=
           `<tr id="create-row" ><th scope="row"><text>Create Bill</text></th>` +
@@ -106,14 +104,15 @@
           `<td> Calculated After Creation</td>` +
           `<td ><input id="create-date" type="date" placeholder="day due" ></input></td>` +
           `<td><button id="create-button" type="button" class="btn btn-outline-success"> create</button></td></tr>`
-          
-          // Total bill amount row
-          document.getElementById('table-rows').innerHTML +=
+
+        // Total bill amount row
+        document.getElementById('table-rows').innerHTML +=
           `<tr id="create-row" ><th scope="row"></th>` +
-          `<td > </td>` +
+          `<td ></td>` +
           `<td ><text id="totalBillAmount"  ><b>TOTAL:</b> $${totalBillAmount}</text> </td>` +
           `<td > </td>` +
-          `<td > </td>` 
+          `<td > </td>`
+
         // add "create" row at bottom of all rows
         document
           .getElementById('create-button')
@@ -144,20 +143,14 @@
           body: JSON.stringify(jdata),
           cache: 'default'
         }).then(resp => {
-          console.log('reached base response')
           // if response is in 200-299 range
           if (resp.ok) {
-            return resp
-              .json()
-              .then(jdata => console.log(jdata))
-              .then(() => {
-                window.location.reload()
-              })
+            return resp.json().then(() => {
+              window.location.reload()
+            })
           } else {
-            console.log('reached inside else statuement')
             // if json says to redirect then redirect to login
             if (resp.status == 302) {
-              console.log('requested reload but did not doing it')
             } else if (resp.status == 401) {
               window.location.assign('/login')
             }
@@ -166,7 +159,6 @@
       }
       function clickedEditButton(element) {
         id = element.getAttribute('data-row-id')
-        console.log('getting id=>' + id)
 
         if (isInEditMode) {
           return alert('already in edit mode')
@@ -174,14 +166,10 @@
         isInEditMode = true
 
         const rowId = id
-        console.log('Row id working ->' + rowId)
+
         // get corresponding bill object
         let bill = jdata[rowId]
 
-        // get the row by using rowId
-        //const row = document.getElementById(rowId);
-
-        console.log('rowID = ' + rowId)
         // get all elements that allow editing by user
         let editFields = document.getElementsByClassName('editField' + rowId)
 
@@ -193,7 +181,6 @@
 
         //Add check button next to edit button
         let editBtn = document.getElementById('editBtn' + rowId) // get the edit button for the row being edited
-        console.log('editBtn' + rowId)
 
         // create save edit button
         let saveEdit = document.createElement('button')
@@ -258,12 +245,6 @@
 
         for (let i = 0; i < oldElements.length; i++) {
           oldElements[i].replaceWith(newElements[i])
-          console.log(
-            'old elements len:' +
-              oldElements.length +
-              '  newElements len: ' +
-              newElements.length
-          )
         }
       }
 
@@ -340,8 +321,6 @@
           .getElementById('name' + rowId)
           .getAttribute('placeholder')
 
-        console.log(nameOfBill)
-
         if (
           !confirm(
             'You are attempting to delete the bill: ' +
@@ -361,7 +340,6 @@
         }
         fetch(projectUrl + '/bill/' + getBillUUID(rowId), requestOptions)
           .then(response => response.json())
-          .then(data => console.log('deleted'))
           .then(() => {
             window.location.reload()
           })
