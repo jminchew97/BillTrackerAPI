@@ -9,4 +9,4 @@ To start the server, open your terminal and run the following command:
  
 This will initiate the server and make the application accessible at: http://127.0.0.1:5000.
 
-Enjoy tracking your bills with "BillTrackerAPI"!
+Enjoy tracking your bills with Billy!
